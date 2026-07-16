@@ -109,9 +109,16 @@
   .opt.correct .letter{background:var(--ok);color:#06220f}
   .opt.wrong{background:var(--err-soft);border-color:var(--err)}
   .opt.wrong .letter{background:var(--err);color:#2b0808}
-  .feedback{margin-top:6px;font-size:.95rem;min-height:24px}
+  .feedback{margin-top:6px;font-size:1rem;font-weight:700;min-height:20px}
   .feedback.ok{color:var(--ok)}
   .feedback.err{color:var(--err)}
+  .explain{
+    margin-top:12px;background:var(--accent-soft);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;
+    padding:14px 16px;font-size:.94rem;color:var(--text);
+  }
+  .explain b{color:var(--accent);display:block;font-size:.72rem;
+    letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
   .btn{
     background:var(--accent);color:#0e0c1e;border:none;border-radius:10px;
     padding:13px 26px;font-family:'DM Sans',sans-serif;font-weight:700;
@@ -146,7 +153,11 @@
   }
   .rev-item .q{font-weight:500;margin-bottom:8px}
   .rev-item .a-wrong{color:var(--err)}
-  .rev-item .a-right{color:var(--ok)}
+  .rev-item .a-right{color:var(--ok);margin-bottom:8px}
+  .rev-item .exp{
+    background:var(--accent-soft);border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;padding:10px 12px;font-size:.9rem;color:var(--text-dim);
+  }
   footer{
     text-align:center;color:var(--text-dim);font-size:.8rem;margin-top:48px;
     border-top:1px solid var(--accent-line);padding-top:18px;
@@ -178,25 +189,25 @@
   <div class="mode-card" id="mode-esame">
     <span class="badge">Simulazione</span>
     <h2>Simulazione <em>esame</em> — 30 domande</h2>
-    <p>30 domande casuali da entrambe le raccolte, nessun feedback immediato. Voto finale in trentesimi con revisione degli errori.</p>
+    <p>30 domande casuali da entrambe le raccolte, con correzione e spiegazione subito dopo ogni risposta. Voto finale in trentesimi e riepilogo degli errori.</p>
   </div>
 
   <div class="mode-card" id="mode-mcq">
     <span class="badge">Allenamento</span>
     <h2>Quiz riorganizzati <em>per temi</em></h2>
-    <p>Le domande a risposta multipla della raccolta ufficiale (opzioni originali A–D). Feedback immediato dopo ogni risposta.</p>
+    <p>Le domande a risposta multipla della raccolta ufficiale (opzioni originali A–D). Feedback e spiegazione immediati dopo ogni risposta.</p>
   </div>
 
   <div class="mode-card" id="mode-fp">
     <span class="badge">Allenamento</span>
     <h2>Domande <em>fuori piattaforma</em></h2>
-    <p>Le domande raccolte fuori piattaforma, con distrattori generati automaticamente a ogni sessione. Feedback immediato.</p>
+    <p>Le domande raccolte fuori piattaforma, con distrattori generati automaticamente a ogni sessione. Feedback e spiegazione immediati.</p>
   </div>
 
   <div class="mode-card" id="mode-all">
     <span class="badge">Maratona</span>
     <h2>Tutte le domande, <em>ordine casuale</em></h2>
-    <p>L'intera banca dati mescolata, con feedback immediato. Ideale per il ripasso completo prima dell'esame.</p>
+    <p>L'intera banca dati mescolata, con feedback e spiegazione dopo ogni risposta. Ideale per il ripasso completo prima dell'esame.</p>
   </div>
 </section>
 
@@ -212,6 +223,7 @@
     <div class="q-text" id="q-text"></div>
     <div id="q-options"></div>
     <div class="feedback" id="q-feedback"></div>
+    <div class="explain hidden" id="q-explain"></div>
   </div>
   <div class="quiz-actions">
     <button class="btn ghost" id="btn-exit">Esci</button>
@@ -237,49 +249,91 @@
 <script>
 /* =========================================================
    BANCA 1 — Quiz riorganizzati per temi (opzioni originali)
+   Ogni voce ha una spiegazione (exp) della risposta corretta.
    ========================================================= */
 const MCQ = [
- {t:"Crisi del Seicento", q:"Secondo Trevor-Roper, la principale causa della crisi del Seicento riguardava:", o:["Il commercio con l'Africa","Le tensioni tra società e Stato","L'eccesso di produzione agricola","L'espansione coloniale"], c:1},
- {t:"Crisi del Seicento", q:"Chi ha recentemente sostenuto con forza il carattere globale della crisi del Seicento?", o:["Carlo Cipolla","Fernand Braudel","Geoffrey Parker","Eric Hobsbawm"], c:2},
- {t:"Crisi del Seicento", q:"Trevor-Roper negava che la crisi fosse dovuta a:", o:["Mutamenti climatici","Crisi del sistema feudale","Aumenti demografici","Guerre europee"], c:1},
- {t:"Agricoltura e clima", q:"Una delle cause della crisi agraria secentesca è stata collegata a:", o:["L'aumento dei prezzi del cotone","La piccola glaciazione","L'invasione di insetti parassiti","La scarsità di ferro"], c:1},
- {t:"Agricoltura e clima", q:"In Europa preindustriale, la resa agricola dipendeva soprattutto da:", o:["Tecnologie agricole avanzate","Concimi chimici","Proprietà fondiaria pubblica","Condizioni climatiche"], c:3},
- {t:"Rivolte del Seicento", q:"Le rivoluzioni parallele in Catalogna e Portogallo avvennero nel:", o:["1500","1600","1640","1700"], c:2},
- {t:"Rivolte del Seicento", q:"L'epidemia del 1630 fu diffusa soprattutto tramite:", o:["Navi mercantili","Truppe impegnate nella Guerra dei Trent'anni","Clima avverso","Topi infetti provenienti dall'Asia"], c:1},
- {t:"Galileo e la scienza", q:"L'ispirazione per il cannocchiale di Galileo provenne da:", o:["Germania","Olanda","Francia","Spagna"], c:1},
- {t:"Galileo e la scienza", q:"La commissione che rivalutò il caso Galileo (1992) era presieduta da:", o:["Carlo Maria Martini","Joseph Ratzinger","Paul Poupard","Jean Daniélou"], c:2},
- {t:"Galileo e la scienza", q:"L'editore che pubblicò il \u201cDialogo\u201d di Galileo ad Arcetri fu:", o:["Manuzio","Bodoni","Elzevir","Plantin"], c:2},
- {t:"Astronomia e fisica", q:"Il De revolutionibus segna l'inizio della:", o:["Rivoluzione industriale","Rivoluzione copernicana","Rivoluzione francese","Riforma protestante"], c:1},
- {t:"Astronomia e fisica", q:"Chi dimostrò sperimentalmente il moto della Terra nel 1791–92?", o:["Keplero","Huygens","Guglielmini","Tycho Brahe"], c:2},
- {t:"Astronomia e fisica", q:"L'isocronismo del cicloide fu dimostrato da:", o:["Newton","Huygens","Leibniz","Pascal"], c:1},
- {t:"Strutture familiari", q:"L'emancipazione degli uomini dalla patria potestà avveniva soprattutto tramite:", o:["Lavoro indipendente","Acquisto della casa","Matrimonio","Servizio militare"], c:2},
- {t:"Strutture familiari", q:"Le giovani donne non ancora sposate venivano definite:", o:["Donne adulte","Da marito","Conventuali","Giovani madri"], c:1},
- {t:"Donna e società", q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra:", o:["20-25 anni","25-30 anni","35-40 anni","45-50 anni"], c:2},
- {t:"Donna e società", q:"Nella Francia del Settecento le \u201cdonne di spirito\u201d partecipavano attivamente a:", o:["Assemblee politiche","Accademie militari","Salotti culturali","Corporazioni commerciali"], c:2},
- {t:"Donna e società", q:"Nel Quattrocento e Cinquecento l'accesso femminile alle corporazioni dipendeva soprattutto da:", o:["Meriti individuali","Esami pubblici","Legami familiari","Residenza urbana"], c:2},
- {t:"Inghilterra industriale", q:"Il primo settore in cui si avviarono trasformazioni industriali fu:", o:["Metallurgia","Tessile","Chimica","Cantieristica"], c:1},
- {t:"Inghilterra industriale", q:"La Grand National Consolidated Union nacque nel:", o:["1830","1834","1840","1850"], c:1},
- {t:"Inghilterra industriale", q:"Il \u201cFactory Act\u201d, prima legge di rilievo per la tutela dei lavoratori, fu introdotto nel:", o:["1800","1820","1833","1848"], c:2},
- {t:"Inghilterra industriale", q:"Il perfezionamento della macchina a vapore del 1781 è attribuito a:", o:["Trevithick","Newcomen","Watt","Brindley"], c:2},
- {t:"Urbanizzazione", q:"La crescita urbana inglese tra il 1800 e il 1900 portò la popolazione cittadina dal 30% al:", o:["40%","60%","75%","90%"], c:2},
- {t:"Urbanizzazione", q:"Le abitazioni operaie nelle città industriali erano spesso situate in:", o:["Quartieri borghesi","Slums","Centri storici","Case comunali moderne"], c:1},
- {t:"Urbanizzazione", q:"La diffusa bevanda alcolica associata al degrado urbano della prima industrializzazione era:", o:["Whisky","Birra scura","Gin","Sidro"], c:2},
- {t:"Movimenti e protagonisti", q:"John Doherty organizzò l'unione generale di:", o:["Fabbri","Filatori","Muratori","Agricoltori"], c:1},
- {t:"Movimenti e protagonisti", q:"Il giornale \u201cThe Voice of the People\u201d era legato al movimento di:", o:["Marx","Owen","Doherty","Smith"], c:2},
- {t:"Movimenti e protagonisti", q:"Il cartismo nacque dalla \u201cPeople's Charter\u201d scritta nel:", o:["1820","1836","1848","1860"], c:1},
- {t:"Migrazioni e capitalismo", q:"Le grandi migrazioni tra fine Ottocento e inizio Novecento si diressero soprattutto verso:", o:["Sud America","Medio Oriente","USA e Canada","Russia"], c:2},
- {t:"Migrazioni e capitalismo", q:"L'industrializzazione portò alla nascita di un nuovo sistema economico, definito:", o:["Mercantilismo","Capitalismo","Feudalesimo moderno","Corporativismo"], c:1},
- {t:"Politica europea", q:"Il Reform Act britannico fu approvato nel:", o:["1815","1832","1848","1867"], c:1},
- {t:"Politica europea", q:"Il programma radicale inglese del 1816–1819 chiedeva soprattutto:", o:["Abolizione dei partiti","Suffragio universale e riforma parlamentare","Mantenimento dei privilegi nobiliari","Centralizzazione militare"], c:1},
- {t:"Politica europea", q:"La regina Vittoria salì al trono a:", o:["14 anni","16 anni","18 anni","20 anni"], c:2},
- {t:"Politica europea", q:"Il principe Alberto, marito della regina Vittoria, era politicamente:", o:["Liberale","Conservatore","Socialista","Neutrale"], c:1},
- {t:"Stampa e cultura", q:"La prima tipografia in territorio italiano fu fondata nel 1465 a:", o:["Venezia","Milano","Firenze","Subiaco"], c:3},
- {t:"Stampa e cultura", q:"Uno dei centri più importanti dell'editoria rinascimentale, fondato da Manuzio, sorse a:", o:["Roma","Venezia","Bologna","Torino"], c:1},
- {t:"Stampa e cultura", q:"L'uso del latino come lingua comune favorì:", o:["La censura religiosa","La diffusione europea dei libri","La proibizione dei testi scientifici","La frammentazione culturale"], c:1},
- {t:"Rivoluzione industriosa", q:"In Asia e nell'Europa orientale, mentre l'Occidente viveva la rivoluzione industriale, si sviluppò la:", o:["Rivoluzione agraria","Rivoluzione industriosa","Rivoluzione commerciale","Rivoluzione politica"], c:1},
- {t:"Domande miste", q:"Le opere di Lutero raggiunsero circa:", o:["10.000 copie","100.000 copie","300.000 copie","1 milione"], c:2},
- {t:"Domande miste", q:"L'origine nazionale attribuita a un imprenditore che divenne simbolo di nuove teorie sociali era:", o:["Scozzese","Irlandese","Gallese","Inglese"], c:2},
- {t:"Domande miste", q:"L'identità maschile nell'età moderna era centrata soprattutto sull'investimento nella:", o:["Mobilità sociale","Ricchezza personale","Discendenza","Guerra"], c:2}
+ {t:"Crisi del Seicento", q:"Secondo Trevor-Roper, la principale causa della crisi del Seicento riguardava:", o:["Il commercio con l'Africa","Le tensioni tra società e Stato","L'eccesso di produzione agricola","L'espansione coloniale"], c:1,
+  exp:"Trevor-Roper lesse la crisi del Seicento come crisi politica: il conflitto tra la \u201ccorte\u201d (un apparato statale ipertrofico, parassitario e costosissimo) e il \u201cpaese\u201d, cioè la società che ne sopportava il peso fiscale. Non una crisi economica di produzione, né climatica: una tensione tra società e Stato."},
+ {t:"Crisi del Seicento", q:"Chi ha recentemente sostenuto con forza il carattere globale della crisi del Seicento?", o:["Carlo Cipolla","Fernand Braudel","Geoffrey Parker","Eric Hobsbawm"], c:2,
+  exp:"Geoffrey Parker, in tempi recenti, ha collegato la crisi del Seicento alla piccola glaciazione su scala planetaria: guerre, carestie e rivolte non solo in Europa ma anche in Cina e nell'Impero ottomano. Da qui il \u201ccarattere globale\u201d della crisi. Cipolla, Braudel e Hobsbawm sono storici precedenti con letture diverse."},
+ {t:"Crisi del Seicento", q:"Trevor-Roper negava che la crisi fosse dovuta a:", o:["Mutamenti climatici","Crisi del sistema feudale","Aumenti demografici","Guerre europee"], c:1,
+  exp:"Trevor-Roper respingeva la lettura marxista (sostenuta da Hobsbawm) secondo cui la crisi del Seicento sarebbe stata la crisi del sistema feudale, necessaria al passaggio verso il capitalismo. Per lui la frattura era invece politica, tra società e Stato."},
+ {t:"Agricoltura e clima", q:"Una delle cause della crisi agraria secentesca è stata collegata a:", o:["L'aumento dei prezzi del cotone","La piccola glaciazione","L'invasione di insetti parassiti","La scarsità di ferro"], c:1,
+  exp:"Il XVII secolo coincide con la \u201cpiccola glaciazione\u201d: un raffreddamento del clima che accorciò le stagioni agricole, ridusse i raccolti e moltiplicò le carestie. È una delle spiegazioni proposte per la sfavorevole congiuntura agraria del Seicento."},
+ {t:"Agricoltura e clima", q:"In Europa preindustriale, la resa agricola dipendeva soprattutto da:", o:["Tecnologie agricole avanzate","Concimi chimici","Proprietà fondiaria pubblica","Condizioni climatiche"], c:3,
+  exp:"Prima della rivoluzione agricola e dei concimi chimici, l'agricoltura era in balìa del tempo: un'annata fredda o piovosa significava raccolto scarso e carestia. Per questo la resa dipendeva soprattutto dalle condizioni climatiche, non dalla tecnologia (ancora rudimentale)."},
+ {t:"Rivolte del Seicento", q:"Le rivoluzioni parallele in Catalogna e Portogallo avvennero nel:", o:["1500","1600","1640","1700"], c:2,
+  exp:"Nel 1640 Catalogna e Portogallo insorsero quasi contemporaneamente contro il dominio castigliano di Filippo IV e del conte-duca di Olivares, che pretendeva uomini e denaro per le guerre. Il Portogallo riconquistò l'indipendenza; la rivolta catalana fu domata."},
+ {t:"Rivolte del Seicento", q:"L'epidemia del 1630 fu diffusa soprattutto tramite:", o:["Navi mercantili","Truppe impegnate nella Guerra dei Trent'anni","Clima avverso","Topi infetti provenienti dall'Asia"], c:1,
+  exp:"La peste del 1630 (quella \u201cmanzoniana\u201d) fu portata in Italia dai lanzichenecchi, le truppe imperiali scese per la guerra di successione di Mantova, episodio della Guerra dei Trent'anni. Gli eserciti in movimento erano il principale veicolo di contagio."},
+ {t:"Galileo e la scienza", q:"L'ispirazione per il cannocchiale di Galileo provenne da:", o:["Germania","Olanda","Francia","Spagna"], c:1,
+  exp:"Nel 1608 l'olandese Hans Lippershey aveva costruito un \u201cocchiale\u201d che avvicinava gli oggetti lontani. Galileo, saputo dell'invenzione olandese, la perfezionò e ne fece per primo uno strumento di osservazione scientifica del cielo."},
+ {t:"Galileo e la scienza", q:"La commissione che rivalutò il caso Galileo (1992) era presieduta da:", o:["Carlo Maria Martini","Joseph Ratzinger","Paul Poupard","Jean Daniélou"], c:2,
+  exp:"La commissione di studio sul caso Galilei, voluta da Giovanni Paolo II nel 1981, era presieduta dal cardinale francese Paul Poupard e concluse i lavori nel 1992, riconoscendo gli errori commessi dai giudici di Galileo nel 1633."},
+ {t:"Galileo e la scienza", q:"L'editore che pubblicò il \u201cDialogo\u201d di Galileo ad Arcetri fu:", o:["Manuzio","Bodoni","Elzevir","Plantin"], c:2,
+  exp:"Gli Elzevir erano editori olandesi di Leida, fuori dalla portata della censura romana: per questo poterono stampare le opere di Galileo quando era ormai condannato e confinato ad Arcetri. Manuzio era attivo un secolo prima a Venezia."},
+ {t:"Astronomia e fisica", q:"Il De revolutionibus segna l'inizio della:", o:["Rivoluzione industriale","Rivoluzione copernicana","Rivoluzione francese","Riforma protestante"], c:1,
+  exp:"Il De revolutionibus orbium coelestium (1543) di Niccolò Copernico propose il sistema eliocentrico, rovesciando la cosmologia tolemaica geocentrica: è l'atto di nascita della \u201crivoluzione copernicana\u201d, da cui prende il nome."},
+ {t:"Astronomia e fisica", q:"Chi dimostrò sperimentalmente il moto della Terra nel 1791–92?", o:["Keplero","Huygens","Guglielmini","Tycho Brahe"], c:2,
+  exp:"Giovanni Battista Guglielmini, facendo cadere gravi dalla torre degli Asinelli a Bologna nel 1791–92, misurò la deviazione verso est dei corpi in caduta: la prima prova sperimentale diretta della rotazione terrestre. Keplero e Brahe erano vissuti quasi due secoli prima e lavorarono su basi teoriche e osservative, non su questa prova."},
+ {t:"Astronomia e fisica", q:"L'isocronismo del cicloide fu dimostrato da:", o:["Newton","Huygens","Leibniz","Pascal"], c:1,
+  exp:"Christiaan Huygens, nell'Horologium oscillatorium (1673), dimostrò che le oscillazioni di un pendolo sono perfettamente isocrone (stesso periodo qualunque sia l'ampiezza) solo se il percorso è un arco di cicloide, non di circonferenza. Su questo basò i suoi orologi a pendolo."},
+ {t:"Strutture familiari", q:"L'emancipazione degli uomini dalla patria potestà avveniva soprattutto tramite:", o:["Lavoro indipendente","Acquisto della casa","Matrimonio","Servizio militare"], c:2,
+  exp:"In età moderna l'uomo restava sotto l'autorità del pater familias finché non si sposava: era il matrimonio a fondare un nucleo domestico autonomo e a segnare l'indipendenza. Né il lavoro né il servizio militare avevano lo stesso valore giuridico e sociale."},
+ {t:"Strutture familiari", q:"Le giovani donne non ancora sposate venivano definite:", o:["Donne adulte","Da marito","Conventuali","Giovani madri"], c:1,
+  exp:"La donna postpuberale non ancora sposata era detta \u201cda marito\u201d (da maritare): la sua condizione sociale era definita interamente in funzione del matrimonio atteso, unica destinazione considerata normale insieme al convento."},
+ {t:"Donna e società", q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra:", o:["20-25 anni","25-30 anni","35-40 anni","45-50 anni"], c:2,
+  exp:"Secondo gli studi di demografia storica di Christiane Klapisch-Zuber, le gravidanze terminavano mediamente tra i 35 e i 40 anni: quell'età rappresentava la \u201csvolta\u201d nella vita delle donne, che uscivano dal ciclo delle maternità continue."},
+ {t:"Donna e società", q:"Nella Francia del Settecento le \u201cdonne di spirito\u201d partecipavano attivamente a:", o:["Assemblee politiche","Accademie militari","Salotti culturali","Corporazioni commerciali"], c:2,
+  exp:"Le \u201cdonne di spirito\u201d animavano i salons parigini: salotti privati dove, già dalla fine del XVII secolo, si svolgevano conversazioni letterarie e filosofiche dirette da padrone di casa colte (le salonnières). Era il primo spazio pubblico-culturale accessibile alle donne, non le assemblee politiche."},
+ {t:"Donna e società", q:"Nel Quattrocento e Cinquecento l'accesso femminile alle corporazioni dipendeva soprattutto da:", o:["Meriti individuali","Esami pubblici","Legami familiari","Residenza urbana"], c:2,
+  exp:"Dalla fine del Quattrocento le donne entravano nelle corporazioni quasi solo in quanto mogli, vedove o figlie di maestri artigiani: contava il legame familiare, non il merito o un esame. La loro presenza era quindi sempre più dipendente e subordinata."},
+ {t:"Inghilterra industriale", q:"Il primo settore in cui si avviarono trasformazioni industriali fu:", o:["Metallurgia","Tessile","Chimica","Cantieristica"], c:1,
+  exp:"La meccanizzazione partì dal tessile, in particolare dal cotone: spinning jenny, water frame e telaio meccanico trasformarono filatura e tessitura tra Sette e Ottocento. Metallurgia e chimica decollarono dopo, trainate proprio dalla domanda del tessile e delle macchine."},
+ {t:"Inghilterra industriale", q:"La Grand National Consolidated Union nacque nel:", o:["1830","1834","1840","1850"], c:1,
+  exp:"La Grand National Consolidated Trades Union fu fondata nel 1834 su impulso di Robert Owen: la grande centrale sindacale riunì forse quasi la metà del milione di lavoratori allora iscritti ai sindacati britannici."},
+ {t:"Inghilterra industriale", q:"Il \u201cFactory Act\u201d, prima legge di rilievo per la tutela dei lavoratori, fu introdotto nel:", o:["1800","1820","1833","1848"], c:2,
+  exp:"Il Factory Act del 1833 fu la prima vera legge di protezione dei lavoratori: limitò il lavoro dei bambini nelle fabbriche tessili e istituì gli ispettori di fabbrica. Il 1833 è anche l'anno dell'abolizione della schiavitù nelle Indie occidentali britanniche."},
+ {t:"Inghilterra industriale", q:"Il perfezionamento della macchina a vapore del 1781 è attribuito a:", o:["Trevithick","Newcomen","Watt","Brindley"], c:2,
+  exp:"Nel 1781 James Watt brevettò il meccanismo che trasformava il moto alternato in moto rotativo, rendendo la macchina a vapore utilizzabile nelle fabbriche. Attenzione ai distrattori: Newcomen aveva costruito la pompa mineraria (1712), Trevithick avrebbe creato le locomotive, Brindley progettava canali."},
+ {t:"Urbanizzazione", q:"La crescita urbana inglese tra il 1800 e il 1900 portò la popolazione cittadina dal 30% al:", o:["40%","60%","75%","90%"], c:2,
+  exp:"In cento anni la popolazione urbana della Gran Bretagna passò dal 30% al 75%: l'industrializzazione svuotò le campagne e gonfiò le città, facendo dell'Inghilterra il primo paese a maggioranza urbana della storia."},
+ {t:"Urbanizzazione", q:"Le abitazioni operaie nelle città industriali erano spesso situate in:", o:["Quartieri borghesi","Slums","Centri storici","Case comunali moderne"], c:1,
+  exp:"Gli operai vivevano negli slums: sobborghi fatiscenti, sovraffollati e privi di servizi igienici che crescevano attorno alle fabbriche. Le case comunali moderne arriveranno solo con le politiche abitative del Novecento."},
+ {t:"Urbanizzazione", q:"La diffusa bevanda alcolica associata al degrado urbano della prima industrializzazione era:", o:["Whisky","Birra scura","Gin","Sidro"], c:2,
+  exp:"Il gin, distillato economico e ad alta gradazione, si diffuse tra gli operai delle baracche come evasione dalla miseria: costava pochissimo e stordiva in fretta. Divenne il simbolo del degrado dei sobborghi industriali inglesi."},
+ {t:"Movimenti e protagonisti", q:"John Doherty organizzò l'unione generale di:", o:["Fabbri","Filatori","Muratori","Agricoltori"], c:1,
+  exp:"John Doherty, sindacalista di origine irlandese, organizzò i filatori di cotone: nel 1829 li riunì in un'Unione generale di tutto il Regno Unito, tappa fondamentale del sindacalismo britannico."},
+ {t:"Movimenti e protagonisti", q:"Il giornale \u201cThe Voice of the People\u201d era legato al movimento di:", o:["Marx","Owen","Doherty","Smith"], c:2,
+  exp:"\u201cThe Voice of the People\u201d era il settimanale tradeunionista fondato da John Doherty per dare voce al movimento operaio dei filatori. Owen ebbe una propria centrale sindacale (la GNCU), ma il giornale era di Doherty."},
+ {t:"Movimenti e protagonisti", q:"Il cartismo nacque dalla \u201cPeople's Charter\u201d scritta nel:", o:["1820","1836","1848","1860"], c:1,
+  exp:"La \u201cCarta del popolo\u201d (The People's Charter) fu elaborata nel 1836: chiedeva tra l'altro il suffragio universale maschile e il voto segreto. Dal documento prese il nome il movimento cartista, il più grande fenomeno popolare della prima metà dell'Ottocento inglese."},
+ {t:"Migrazioni e capitalismo", q:"Le grandi migrazioni tra fine Ottocento e inizio Novecento si diressero soprattutto verso:", o:["Sud America","Medio Oriente","USA e Canada","Russia"], c:2,
+  exp:"La grande emigrazione europea di fine Ottocento-inizio Novecento si diresse in massa verso il Nord America: Stati Uniti e Canada offrivano terra, lavoro industriale e salari più alti. Il Sud America fu meta importante ma secondaria rispetto al flusso nordamericano."},
+ {t:"Migrazioni e capitalismo", q:"L'industrializzazione portò alla nascita di un nuovo sistema economico, definito:", o:["Mercantilismo","Capitalismo","Feudalesimo moderno","Corporativismo"], c:1,
+  exp:"La rivoluzione industriale generò il capitalismo: un sistema fondato sulla proprietà privata dei mezzi di produzione, sul lavoro salariato e sull'accumulazione del profitto da reinvestire. Il mercantilismo era invece la dottrina economica precedente, centrata sullo Stato."},
+ {t:"Politica europea", q:"Il Reform Act britannico fu approvato nel:", o:["1815","1832","1848","1867"], c:1,
+  exp:"Il Reform Act fu imposto nel 1832, sotto il ministero whig di Lord Grey, anche grazie alla pressione dell'agitazione operaia: ampliò il suffragio e ridisegnò i collegi elettorali eliminando i \u201cborghi putridi\u201d. Il 1867 è la data della seconda riforma elettorale."},
+ {t:"Politica europea", q:"Il programma radicale inglese del 1816–1819 chiedeva soprattutto:", o:["Abolizione dei partiti","Suffragio universale e riforma parlamentare","Mantenimento dei privilegi nobiliari","Centralizzazione militare"], c:1,
+  exp:"Negli anni di crisi 1816–1819 fu il sostegno popolare a dare ampiezza all'agitazione radicale, il cui programma era costituito dal suffragio universale e dalla riforma parlamentare: allargare il voto e rendere il Parlamento rappresentativo."},
+ {t:"Politica europea", q:"La regina Vittoria salì al trono a:", o:["14 anni","16 anni","18 anni","20 anni"], c:2,
+  exp:"Vittoria salì al trono nel 1837, a diciotto anni, alla morte dello zio Guglielmo IV. Il suo lunghissimo regno (fino al 1901) diede il nome all'intera epoca vittoriana."},
+ {t:"Politica europea", q:"Il principe Alberto, marito della regina Vittoria, era politicamente:", o:["Liberale","Conservatore","Socialista","Neutrale"], c:1,
+  exp:"Alberto di Sassonia-Coburgo, sposato da Vittoria nel 1840 (ed era anche suo cugino), era politicamente conservatore, pur essendo un attivo promotore di scienza, tecnica e industria, come dimostrò con la Grande Esposizione del 1851."},
+ {t:"Stampa e cultura", q:"La prima tipografia in territorio italiano fu fondata nel 1465 a:", o:["Venezia","Milano","Firenze","Subiaco"], c:3,
+  exp:"La prima tipografia italiana fu aperta nel 1465 nel monastero benedettino di Subiaco, vicino Roma, dai tipografi tedeschi Sweynheym e Pannartz. Venezia arrivò dopo (1469), ma divenne poi il maggior centro editoriale."},
+ {t:"Stampa e cultura", q:"Uno dei centri più importanti dell'editoria rinascimentale, fondato da Manuzio, sorse a:", o:["Roma","Venezia","Bologna","Torino"], c:1,
+  exp:"Aldo Manuzio, editore e umanista, si trasferì a Venezia (dove la stampa era approdata nel 1469) e vi fondò il principale centro italiano di produzione dei testi classici greci e latini: le celebri edizioni aldine."},
+ {t:"Stampa e cultura", q:"L'uso del latino come lingua comune favorì:", o:["La censura religiosa","La diffusione europea dei libri","La proibizione dei testi scientifici","La frammentazione culturale"], c:1,
+  exp:"Il latino era la lingua comune di tutti i dotti: un libro stampato in latino poteva essere venduto, acquistato e letto in tutta Europa. Questo creò un mercato librario continentale e favorì la circolazione delle idee, l'esatto contrario della frammentazione."},
+ {t:"Rivoluzione industriosa", q:"In Asia e nell'Europa orientale, mentre l'Occidente viveva la rivoluzione industriale, si sviluppò la:", o:["Rivoluzione agraria","Rivoluzione industriosa","Rivoluzione commerciale","Rivoluzione politica"], c:1,
+  exp:"La \u201crivoluzione industriosa\u201d indica un'intensificazione del lavoro delle famiglie (più ore, più membri occupati, produzione per il mercato) senza la meccanizzazione tipica dell'Occidente: è il percorso seguito da Asia ed Europa orientale mentre l'Ovest si industrializzava."},
+ {t:"Domande miste", q:"Le opere di Lutero raggiunsero circa:", o:["10.000 copie","100.000 copie","300.000 copie","1 milione"], c:2,
+  exp:"Le trenta pubblicazioni di Lutero vendettero circa 300.000 copie: un successo di massa senza precedenti, reso possibile dalla stampa a caratteri mobili, che fu il vero motore della diffusione della Riforma."},
+ {t:"Domande miste", q:"L'origine nazionale attribuita a un imprenditore che divenne simbolo di nuove teorie sociali era:", o:["Scozzese","Irlandese","Gallese","Inglese"], c:2,
+  exp:"L'imprenditore è Robert Owen, gallese: nato a Newtown (Galles) da una famiglia di artigiani, con la filanda di New Lanark entrò nella nuova classe imprenditoriale e impersonò un'ideologia nuova, il socialismo utopistico e cooperativo."},
+ {t:"Domande miste", q:"L'identità maschile nell'età moderna era centrata soprattutto sull'investimento nella:", o:["Mobilità sociale","Ricchezza personale","Discendenza","Guerra"], c:2,
+  exp:"In età moderna l'identità maschile si costruiva sull'investimento nella discendenza: assicurare la continuità del lignaggio, trasmettere nome e patrimonio ai figli. La ricchezza era un mezzo, la discendenza il fine."}
 ];
 
 /* =========================================================
@@ -287,83 +341,160 @@ const MCQ = [
    cat: persona | anno | luogo | concetto | numero | opera
    ========================================================= */
 const FP = [
- {q:"Nelle periferie degradate delle città inglesi, tra le baracche degli operai, iniziò a diffondersi una nuova bevanda:", a:"Il gin", cat:"concetto"},
- {q:"I primi luoghi dove le donne apparvero sulla scena culturale, alla fine del XVII secolo in Francia, furono:", a:"I salons parigini", cat:"luogo"},
- {q:"Il De revolutionibus orbium coelestium segna l'inizio della:", a:"Rivoluzione copernicana", cat:"concetto"},
- {q:"Alla fine del '700 un britannico costruisce macchine a vapore per le strade normali e introduce modifiche che consentono loro di muoversi su quelle ferrate:", a:"Richard Trevithick", cat:"persona"},
- {q:"La Guerra dei Trent'anni si svolse negli anni:", a:"1618–1648", cat:"anno"},
- {q:"La Grand National Consolidated Union era:", a:"Un movimento sindacale inglese del 1834", cat:"concetto"},
- {q:"Il vero e proprio tracollo italiano derivò dalla peste del 1629–30, che uccise circa 1.350.000 persone nel:", a:"Centro-nord della penisola", cat:"luogo"},
- {q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra i:", a:"35–40 anni", cat:"numero"},
- {q:"La rivoluzione industriale e l'avanzamento della tecnologia hanno dato origine al fenomeno del:", a:"Capitalismo", cat:"concetto"},
- {q:"La prima vera prova sperimentale del moto della Terra si ebbe solo nel 1791–92 da parte di:", a:"Guglielmini", cat:"persona"},
- {q:"Nel 1832, sotto il ministero whig di Lord Grey, l'agitazione operaia riesce a imporre il:", a:"Reform Act", cat:"concetto"},
- {q:"Huygens dimostrò che l'isocronismo si realizza:", a:"Sul cicloide", cat:"concetto"},
- {q:"Dalla fine del Quattrocento la presenza femminile nelle corporazioni risulta sempre più dipendente da:", a:"I loro legami familiari", cat:"concetto"},
- {q:"Come veniva definita la donna in età da marito (postpuberale) ma non ancora sposata?", a:"Da maritare", cat:"concetto"},
- {q:"Il libro alla cui stesura partecipò Galileo, condannato perché ritenuto pericoloso:", a:"Il Dialogo", cat:"opera"},
- {q:"Quante copie furono vendute delle trenta pubblicazioni di Lutero?", a:"300.000 copie", cat:"numero"},
- {q:"Dov'è nato Martin Lutero?", a:"In Sassonia", cat:"luogo"},
- {q:"La popolazione urbana della Gran Bretagna nel XIX secolo passò in cento anni dal 30% al:", a:"75%", cat:"numero"},
- {q:"Le quattro premesse essenziali della Rivoluzione Industriale presenti solo in Inghilterra (incremento demografico, rivoluzione agricola, sviluppo dei commerci, crescita culturale-tecnologica) seguono la lezione dello storico:", a:"Paolo Viola", cat:"persona"},
- {q:"Alla fine del XVIII secolo lo strumento fondamentale per l'attività mineraria in Inghilterra era:", a:"La pompa di Newcomen", cat:"concetto"},
- {q:"I filatori si riunirono in un movimento di sciopero grazie anche all'opera di:", a:"John Doherty", cat:"persona"},
- {q:"La popolazione comincia a concentrarsi nelle città, dando luogo al fenomeno:", a:"Dell'urbanesimo", cat:"concetto"},
- {q:"Il programma dell'agitazione radicale inglese negli anni di crisi 1816–1819 era costituito da:", a:"Suffragio universale e riforma parlamentare", cat:"concetto"},
- {q:"Con l'avvento della Rivoluzione Industriale nuovi centri urbani nacquero dal nulla, come:", a:"Liverpool e Manchester", cat:"luogo"},
- {q:"A sostenere che l'Inghilterra fosse la regione con la maggiore quantità di terreno agricolo disponibile per lavoratore, con al tempo stesso una forte urbanizzazione, è stato lo storico:", a:"Dovring", cat:"persona"},
- {q:"La pressione per far sposare le figlie il più giovani possibile portava talvolta nel letto nuziale ragazze non ancora mestruate, come accadde alla novenne:", a:"Caterina Sforza", cat:"persona"},
- {q:"Il primo fulcro delle trasformazioni industriali inglesi avvenne nel settore:", a:"Tessile", cat:"concetto"},
- {q:"L'identità maschile in età moderna veniva associata all'investimento sulla:", a:"Discendenza", cat:"concetto"},
- {q:"La finitrice meccanica era stata inventata intorno al 1830 nel:", a:"New England", cat:"luogo"},
- {q:"Figure prima irregolari sono ora inserite a pieno titolo e apprezzate dalla società del Settecento, come la pittrice:", a:"Rosalba Carriera", cat:"persona"},
- {q:"La commissione vaticana sul caso Galilei era presieduta da:", a:"Paul Poupard", cat:"persona"},
- {q:"L'uso prevalente di una lingua comune, il latino, consentì la stampa di libri che potevano essere acquistati e letti:", a:"In tutta Europa", cat:"luogo"},
- {q:"Nel 1829 John Doherty riunisce nel Regno Unito in un'Unione Generale:", a:"I filatori", cat:"concetto"},
- {q:"Il canale del Duca di Bridgewater che collega Worsley a Manchester fu progettato da:", a:"James Brindley", cat:"persona"},
- {q:"\u201cThe Voice of the People\u201d era il settimanale tradeunionista di:", a:"John Doherty", cat:"persona"},
- {q:"Dal 1824 al 1829 Owen tentò un esperimento di villaggio cooperativo a New Harmony, in:", a:"Indiana", cat:"luogo"},
- {q:"Dove fu fatta la prova di una cooperativa di consumo?", a:"A Rochdale", cat:"luogo"},
- {q:"Una delle spiegazioni della sfavorevole congiuntura agraria secentesca è legata:", a:"Al mutamento climatico (piccola glaciazione)", cat:"concetto"},
- {q:"L'avvocato irlandese che, insieme ad altri, voleva diventare regista del movimento cartista:", a:"O'Connor", cat:"persona"},
- {q:"Tra i movimenti di agitazione rivoluzionaria più noti della prima metà dell'Ottocento si annovera:", a:"Il cartismo", cat:"concetto"},
- {q:"I sobborghi fatiscenti in cui erano costretti a vivere in condizioni disumane gli operai delle fabbriche inglesi erano denominati:", a:"Slums", cat:"concetto"},
- {q:"Nel 1819 un reggimento di cavalleria (ussari) caricò un meeting di 50.000 persone a:", a:"Saint Peter Fields", cat:"luogo"},
- {q:"L'anno in cui il Factory Act portò agli operai la prima legge sulla protezione dei lavoratori (stesso anno dell'abolizione della schiavitù nelle Indie occidentali):", a:"1833", cat:"anno"},
- {q:"I cambiamenti intervenuti tra il 1760 e il 1830 nella struttura sociale ed economica britannica vengono tradizionalmente riassunti con l'espressione:", a:"Prima Rivoluzione Industriale", cat:"concetto"},
- {q:"L'Inghilterra era ricca di stratigrafie del:", a:"Carbonifero", cat:"concetto"},
- {q:"I testi spagnoli del Seicento contenenti consigli e propositi di politica economica presero il nome di:", a:"Arbitros", cat:"concetto"},
- {q:"Coloro che estendevano il concetto di riforma dal campo morale a quello della fede e del dogma erano detti:", a:"Agitatori religiosi", cat:"concetto"},
- {q:"Lo scrittore vittoriano che a 12 anni lavorava in fabbrica e scrisse del lavoro minorile:", a:"Charles Dickens", cat:"persona"},
- {q:"Alberto, principe di Sassonia-Coburgo, sposato dalla regina Vittoria nel 1840, era, dal punto di vista della parentela:", a:"Suo cugino", cat:"concetto"},
- {q:"Alberto, principe di Sassonia-Coburgo, era politicamente:", a:"Conservatore", cat:"concetto"},
- {q:"Nei primi anni del lungo regno della regina Vittoria il suo mentore fu:", a:"Lord Melbourne", cat:"persona"},
- {q:"A metà del XVIII secolo scrisse uno dei primi saggi di scienza sociale sulle attese di vita:", a:"Antoine Deparcieux", cat:"persona"},
- {q:"Le celebrazioni carnevalesche usuali in Francia fino al Settecento erano note come:", a:"Feste dei folli", cat:"concetto"},
- {q:"In Italia la prima tipografia fu aperta nel 1465 a:", a:"Subiaco", cat:"luogo"},
- {q:"In Catalogna e Portogallo scoppiarono due rivoluzioni parallele per l'emancipazione dal dominio castigliano nel:", a:"1640", cat:"anno"},
- {q:"Nel 1469 l'arte della stampa approdò a Venezia; qui si trasferì l'editore e umanista:", a:"Aldo Manuzio", cat:"persona"},
- {q:"L'idea di un cannocchiale giunge a Galileo da un'invenzione:", a:"Olandese", cat:"concetto"},
- {q:"A teorizzare il riassorbimento della disoccupazione industriale col ritorno ai campi, dove cooperative operaie acquisterebbero grandi estensioni di terreno per la lottizzazione in piccole proprietà, fu:", a:"O'Connor", cat:"persona"},
- {q:"Dopo il 1820 in Inghilterra la distruzione delle prime trebbiatrici da parte dei braccianti agricoli ebbe come protagonista-simbolo:", a:"Captain Swing", cat:"persona"},
- {q:"A negare che la crisi del Seicento fosse legata ai processi di produzione e alla necessità di abbattere il sistema feudale per quello capitalistico fu:", a:"Trevor-Roper", cat:"persona"},
- {q:"L'epidemia del 1630 fu veicolata da:", a:"Le truppe impegnate nella Guerra dei Trent'anni", cat:"concetto"},
- {q:"Nel 1781 il brevetto della macchina a vapore si realizzò grazie all'ingegnosità di:", a:"James Watt", cat:"persona"},
- {q:"La regina Vittoria salì al trono nel 1837 a:", a:"Diciotto anni", cat:"numero"},
- {q:"Dove è stata costruita nel 1863 la prima metropolitana al mondo?", a:"Londra", cat:"luogo"},
- {q:"Recentemente a insistere sul carattere globale della crisi del Seicento è stato:", a:"Geoffrey Parker", cat:"persona"},
- {q:"L'emancipazione dell'uomo dal pater familias avveniva soprattutto tramite:", a:"Il matrimonio", cat:"concetto"},
- {q:"Il mondo della borghesia urbana non costruì un'identità antagonista a quella della nobiltà: la sua massima aspirazione era integrarsi per mezzo di:", a:"Alleanze matrimoniali", cat:"concetto"},
- {q:"Chi ha ben documentato come i più feroci persecutori delle streghe fossero i dotti?", a:"Hugh Trevor-Roper", cat:"persona"},
- {q:"La regina Vittoria sostenne fermamente la politica liberista di:", a:"Robert Peel", cat:"persona"},
- {q:"L'uomo originario di una famiglia di artigiani gallesi che con la sua fabbrica a New Lanark entrò nella classe dei nuovi imprenditori e impersonò un'ideologia nuova:", a:"Robert Owen", cat:"persona"},
- {q:"Il \u201cMysterium Cosmographicum\u201d è un'opera di:", a:"Keplero", cat:"persona"},
- {q:"I fenomeni di urbanizzazione dell'età moderna erano più simili a quelli:", a:"Dell'età medievale", cat:"concetto"},
- {q:"I manufatti di cotone realizzati in India e importati dalla Compagnia inglese delle Indie cominciarono a conquistare i mercati europei, americani e africani nella prima metà del:", a:"Settecento", cat:"anno"},
- {q:"Autore del trattato sulla luce (pubblicato nel 1690):", a:"Huygens", cat:"persona"},
- {q:"L'inglese John Wyclif (1330–1384) e il boemo Jan Hus (1369–1415) furono due:", a:"Agitatori religiosi", cat:"concetto"},
- {q:"Dalla \u201cCarta del popolo\u201d (The People's Charter) elaborata nel 1836 nacque il movimento:", a:"Cartista", cat:"concetto"},
- {q:"L'origine nazionale di Robert Owen era:", a:"Gallese", cat:"concetto"}
+ {q:"Nelle periferie degradate delle città inglesi, tra le baracche degli operai, iniziò a diffondersi una nuova bevanda:", a:"Il gin", cat:"concetto",
+  exp:"Il gin era un distillato economico e ad alta gradazione: costava pochissimo e offriva un'evasione immediata dalla miseria degli slums. Per questo divenne la bevanda-simbolo del degrado dei sobborghi industriali inglesi."},
+ {q:"I primi luoghi dove le donne apparvero sulla scena culturale, alla fine del XVII secolo in Francia, furono:", a:"I salons parigini", cat:"luogo",
+  exp:"I salons parigini erano salotti privati dove si svolgevano conversazioni letterarie e filosofiche dirette da donne colte (le salonnières): fu il primo spazio culturale in cui le donne ebbero un ruolo da protagoniste, già dalla fine del XVII secolo."},
+ {q:"Il De revolutionibus orbium coelestium segna l'inizio della:", a:"Rivoluzione copernicana", cat:"concetto",
+  exp:"È l'opera di Niccolò Copernico (1543) che propose il sistema eliocentrico al posto di quello tolemaico geocentrico: da lì prese avvio la \u201crivoluzione copernicana\u201d, che porta il suo nome."},
+ {q:"Alla fine del '700 un britannico costruisce macchine a vapore per le strade normali e introduce modifiche che consentono loro di muoversi su quelle ferrate:", a:"Richard Trevithick", cat:"persona",
+  exp:"Richard Trevithick costruì prima veicoli a vapore stradali, poi nel 1804 adattò la macchina alle rotaie realizzando la prima locomotiva. Non confonderlo con Watt (brevettò la macchina a vapore rotativa) né con Stephenson (perfezionò le locomotive più tardi)."},
+ {q:"La Guerra dei Trent'anni si svolse negli anni:", a:"1618–1648", cat:"anno",
+  exp:"La Guerra dei Trent'anni iniziò con la defenestrazione di Praga (1618) e si chiuse con la pace di Vestfalia (1648): trent'anni esatti di conflitto che devastarono l'Europa centrale e diffusero carestie ed epidemie, tra cui la peste del 1630 in Italia."},
+ {q:"La Grand National Consolidated Union era:", a:"Un movimento sindacale inglese del 1834", cat:"concetto",
+  exp:"Fondata nel 1834 su impulso di Robert Owen, la Grand National Consolidated Trades Union fu la grande centrale sindacale che riunì forse quasi la metà del milione di lavoratori allora iscritti ai sindacati britannici."},
+ {q:"Il vero e proprio tracollo italiano derivò dalla peste del 1629–30, che uccise circa 1.350.000 persone nel:", a:"Centro-nord della penisola", cat:"luogo",
+  exp:"La peste del 1629–30 (quella dei Promessi Sposi) colpì soprattutto il centro-nord italiano: circa 1.350.000 morti che segnarono il definitivo declino economico dell'Italia settentrionale, fino ad allora tra le aree più ricche d'Europa."},
+ {q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra i:", a:"35–40 anni", cat:"numero",
+  exp:"Secondo gli studi di demografia storica di Christiane Klapisch-Zuber, le gravidanze terminavano mediamente tra i 35 e i 40 anni: quell'età segnava la \u201csvolta\u201d nella vita delle donne, l'uscita dal ciclo delle maternità continue."},
+ {q:"La rivoluzione industriale e l'avanzamento della tecnologia hanno dato origine al fenomeno del:", a:"Capitalismo", cat:"concetto",
+  exp:"L'industrializzazione generò un sistema economico nuovo e complesso: il capitalismo, fondato su proprietà privata dei mezzi di produzione, lavoro salariato e accumulazione del profitto da reinvestire nella produzione stessa."},
+ {q:"La prima vera prova sperimentale del moto della Terra si ebbe solo nel 1791–92 da parte di:", a:"Guglielmini", cat:"persona",
+  exp:"Giovanni Battista Guglielmini fece cadere gravi dalla torre degli Asinelli di Bologna: la deviazione verso est dei corpi in caduta, da lui misurata nel 1791–92, fu la prima prova sperimentale diretta della rotazione terrestre — un secolo e mezzo dopo la condanna di Galileo."},
+ {q:"Nel 1832, sotto il ministero whig di Lord Grey, l'agitazione operaia riesce a imporre il:", a:"Reform Act", cat:"concetto",
+  exp:"Il Reform Act del 1832 ampliò il suffragio e ridisegnò i collegi elettorali eliminando i \u201cborghi putridi\u201d. Fu imposto dalla pressione dell'agitazione popolare al governo whig di Lord Grey: la data 1832 e il nome della legge vanno memorizzati insieme."},
+ {q:"Huygens dimostrò che l'isocronismo si realizza:", a:"Sul cicloide", cat:"concetto",
+  exp:"Nell'Horologium oscillatorium (1673) Huygens dimostrò che le oscillazioni di un pendolo hanno lo stesso periodo, qualunque sia l'ampiezza, solo se il percorso è un arco di cicloide (non di circonferenza). Su questo principio costruì i suoi orologi a pendolo."},
+ {q:"Dalla fine del Quattrocento la presenza femminile nelle corporazioni risulta sempre più dipendente da:", a:"I loro legami familiari", cat:"concetto",
+  exp:"Le donne accedevano alle corporazioni quasi solo come mogli, vedove o figlie di maestri artigiani: era il legame familiare (non il merito, né la fede) a determinare la loro presenza, che diventava così sempre più dipendente e subordinata."},
+ {q:"Come veniva definita la donna in età da marito (postpuberale) ma non ancora sposata?", a:"Da maritare", cat:"concetto",
+  exp:"La donna postpuberale non ancora sposata era detta \u201cda maritare\u201d: la sua condizione era definita interamente in funzione del matrimonio atteso, considerato l'unico destino normale insieme alla vita conventuale."},
+ {q:"Il libro alla cui stesura partecipò Galileo, condannato perché ritenuto pericoloso:", a:"Il Dialogo", cat:"opera",
+  exp:"Il Dialogo sopra i due massimi sistemi del mondo (1632) confrontava il sistema tolemaico e quello copernicano, facendo chiaramente prevalere il secondo. Fu condannato dal Sant'Uffizio e costò a Galileo il processo e l'abiura del 1633."},
+ {q:"Quante copie furono vendute delle trenta pubblicazioni di Lutero?", a:"300.000 copie", cat:"numero",
+  exp:"Le trenta pubblicazioni di Lutero vendettero circa 300.000 copie: un successo editoriale senza precedenti, possibile solo grazie alla stampa a caratteri mobili, che fu il vero motore della diffusione della Riforma protestante."},
+ {q:"Dov'è nato Martin Lutero?", a:"In Sassonia", cat:"luogo",
+  exp:"Lutero nacque a Eisleben, in Sassonia, nel 1483. Sempre in Sassonia si trova Wittenberg, dove nel 1517 affisse le 95 tesi e dove insegnava all'università sotto la protezione dell'elettore Federico il Savio."},
+ {q:"La popolazione urbana della Gran Bretagna nel XIX secolo passò in cento anni dal 30% al:", a:"75%", cat:"numero",
+  exp:"In un secolo la popolazione urbana britannica passò dal 30% al 75%: l'industrializzazione svuotò le campagne e riempì le città, facendo della Gran Bretagna il primo paese a maggioranza urbana della storia."},
+ {q:"Le quattro premesse essenziali della Rivoluzione Industriale presenti solo in Inghilterra (incremento demografico, rivoluzione agricola, sviluppo dei commerci, crescita culturale-tecnologica) seguono la lezione dello storico:", a:"Paolo Viola", cat:"persona",
+  exp:"Lo schema delle quattro premesse — forte incremento demografico, rivoluzione agricola, sviluppo dei commerci, crescita culturale-tecnologico-scientifica — è la lezione dello storico Paolo Viola, noto anche come studioso della Rivoluzione francese."},
+ {q:"Alla fine del XVIII secolo lo strumento fondamentale per l'attività mineraria in Inghilterra era:", a:"La pompa di Newcomen", cat:"concetto",
+  exp:"La pompa a vapore di Thomas Newcomen (1712) serviva a drenare l'acqua dalle miniere di carbone, permettendo scavi più profondi: fu lo strumento chiave dell'attività mineraria inglese fino ai perfezionamenti di Watt."},
+ {q:"I filatori si riunirono in un movimento di sciopero grazie anche all'opera di:", a:"John Doherty", cat:"persona",
+  exp:"John Doherty organizzò i filatori di cotone e li guidò negli scioperi; nel 1829 li riunì in un'Unione generale del Regno Unito e fondò il settimanale \u201cThe Voice of the People\u201d. È il nome-chiave del primo sindacalismo inglese."},
+ {q:"La popolazione comincia a concentrarsi nelle città, dando luogo al fenomeno:", a:"Dell'urbanesimo", cat:"concetto",
+  exp:"L'urbanesimo è la concentrazione crescente della popolazione nelle città. Nell'Ottocento la società europea si trasforma: la gente vive più a lungo e in condizioni migliori, e le città crescono a ritmi mai visti trainate dall'industria."},
+ {q:"Il programma dell'agitazione radicale inglese negli anni di crisi 1816–1819 era costituito da:", a:"Suffragio universale e riforma parlamentare", cat:"concetto",
+  exp:"Negli anni di crisi 1816–1819 fu il sostegno popolare a dare ampiezza all'agitazione radicale: il programma chiedeva il suffragio universale e la riforma del Parlamento. La repressione culminò nel massacro di Peterloo (1819)."},
+ {q:"Con l'avvento della Rivoluzione Industriale nuovi centri urbani nacquero dal nulla, come:", a:"Liverpool e Manchester", cat:"luogo",
+  exp:"Manchester (capitale del cotone) e Liverpool (porto atlantico da cui partivano i manufatti e arrivava il cotone grezzo) sono i simboli dei nuovi centri urbani nati dal nulla con la prima industrializzazione inglese."},
+ {q:"A sostenere che l'Inghilterra fosse la regione con la maggiore quantità di terreno agricolo disponibile per lavoratore, con al tempo stesso una forte urbanizzazione, è stato lo storico:", a:"Dovring", cat:"persona",
+  exp:"È la tesi dello storico Dovring: l'Inghilterra univa la maggiore quantità di terreno agricolo disponibile per lavoratore a una forte urbanizzazione — cioè un'agricoltura così produttiva da liberare braccia per le città e le fabbriche."},
+ {q:"La pressione per far sposare le figlie il più giovani possibile portava talvolta nel letto nuziale ragazze non ancora mestruate, come accadde alla novenne:", a:"Caterina Sforza", cat:"persona",
+  exp:"Il caso citato è quello di Caterina Sforza, che nel gennaio 1473, a nove anni, subì la consumazione del matrimonio: esempio estremo della pressione delle famiglie a maritare le figlie il più presto possibile per ragioni di alleanza dinastica."},
+ {q:"Il primo fulcro delle trasformazioni industriali inglesi avvenne nel settore:", a:"Tessile", cat:"concetto",
+  exp:"La meccanizzazione partì dal tessile, in particolare dal cotone: spinning jenny, water frame e telaio meccanico rivoluzionarono filatura e tessitura. Fu la branca più diffusa dell'epoca e il traino di tutta l'industrializzazione."},
+ {q:"L'identità maschile in età moderna veniva associata all'investimento sulla:", a:"Discendenza", cat:"concetto",
+  exp:"L'identità maschile si costruiva sull'investimento nella discendenza: garantire la continuità del lignaggio, trasmettere nome e patrimonio ai figli. È il corrispettivo maschile della definizione della donna in funzione del matrimonio."},
+ {q:"La finitrice meccanica era stata inventata intorno al 1830 nel:", a:"New England", cat:"luogo",
+  exp:"La finitrice meccanica fu inventata intorno al 1830 nel New England, la regione nordorientale degli Stati Uniti che fu il cuore della prima industrializzazione americana, ricalcando il modello tessile inglese."},
+ {q:"Figure prima irregolari sono ora inserite a pieno titolo e apprezzate dalla società del Settecento, come la pittrice:", a:"Rosalba Carriera", cat:"persona",
+  exp:"Rosalba Carriera, ritrattista veneziana celebre per i pastelli, fu apprezzata e ricercata in tutta Europa: il suo successo mostra come nel Settecento figure femminili prima considerate \u201cirregolari\u201d vengano riconosciute a pieno titolo nella società e nella cultura."},
+ {q:"La commissione vaticana sul caso Galilei era presieduta da:", a:"Paul Poupard", cat:"persona",
+  exp:"La commissione di studio voluta da Giovanni Paolo II per riesaminare il caso Galilei era presieduta dal cardinale francese Paul Poupard; concluse i lavori nel 1992 riconoscendo gli errori dei giudici del 1633."},
+ {q:"L'uso prevalente di una lingua comune, il latino, consentì la stampa di libri che potevano essere acquistati e letti:", a:"In tutta Europa", cat:"luogo",
+  exp:"Il latino era la lingua franca dei dotti: un libro stampato in latino trovava lettori e compratori in tutta Europa. Questo creò un mercato librario continentale e accelerò enormemente la circolazione delle idee."},
+ {q:"Nel 1829 John Doherty riunisce nel Regno Unito in un'Unione Generale:", a:"I filatori", cat:"concetto",
+  exp:"Nel 1829 Doherty riunì i filatori di cotone di tutto il Regno Unito in un'Unione generale: fu il primo tentativo di sindacato nazionale di mestiere, premessa della Grand National Consolidated Union del 1834."},
+ {q:"Il canale del Duca di Bridgewater che collega Worsley a Manchester fu progettato da:", a:"James Brindley", cat:"persona",
+  exp:"Il canale del Duca di Bridgewater (1761), che collegava le miniere di Worsley a Manchester, fu progettato dall'ingegnere autodidatta James Brindley: dimezzò il prezzo del carbone a Manchester e aprì l'età dei canali inglesi."},
+ {q:"\u201cThe Voice of the People\u201d era il settimanale tradeunionista di:", a:"John Doherty", cat:"persona",
+  exp:"\u201cThe Voice of the People\u201d era il settimanale fondato da John Doherty per dare voce al movimento sindacale: strumento di stampa operaia legato alla sua opera di organizzatore dei filatori."},
+ {q:"Dal 1824 al 1829 Owen tentò un esperimento di villaggio cooperativo a New Harmony, in:", a:"Indiana", cat:"luogo",
+  exp:"Robert Owen acquistò New Harmony, in Indiana (Stati Uniti), e tra il 1824 e il 1829 vi tentò il suo villaggio cooperativo ideale. L'esperimento fallì, ma le sue idee ispirarono il movimento cooperativo successivo."},
+ {q:"Dove fu fatta la prova di una cooperativa di consumo?", a:"A Rochdale", cat:"luogo",
+  exp:"A Rochdale, presso Manchester, nel 1844 i \u201cprobi pionieri\u201d aprirono il primo spaccio cooperativo di consumo: i soci compravano merci genuine a prezzo equo e si dividevano gli utili. È il modello di tutte le cooperative di consumo successive."},
+ {q:"Una delle spiegazioni della sfavorevole congiuntura agraria secentesca è legata:", a:"Al mutamento climatico (piccola glaciazione)", cat:"concetto",
+  exp:"Il Seicento coincide con la \u201cpiccola glaciazione\u201d: un raffreddamento del clima che accorciò le stagioni agricole e ridusse i raccolti. È una delle spiegazioni proposte per la congiuntura agraria negativa del secolo, con carestie ricorrenti."},
+ {q:"L'avvocato irlandese che, insieme ad altri, voleva diventare regista del movimento cartista:", a:"O'Connor", cat:"persona",
+  exp:"Feargus O'Connor, avvocato irlandese, fu tra coloro che vollero farsi \u201cregisti\u201d del cartismo. Teorizzò anche il ritorno alla terra come rimedio alla disoccupazione industriale, con cooperative operaie che lottizzavano grandi tenute."},
+ {q:"Tra i movimenti di agitazione rivoluzionaria più noti della prima metà dell'Ottocento si annovera:", a:"Il cartismo", cat:"concetto",
+  exp:"Il cartismo, nato dalla People's Charter del 1836, è il più grande movimento popolare della prima metà dell'Ottocento inglese: chiedeva suffragio universale maschile, voto segreto e Parlamenti annuali."},
+ {q:"I sobborghi fatiscenti in cui erano costretti a vivere in condizioni disumane gli operai delle fabbriche inglesi erano denominati:", a:"Slums", cat:"concetto",
+  exp:"Gli slums erano i quartieri-baraccopoli cresciuti attorno alle fabbriche: sovraffollati, malsani, senza fognature. Il termine indica specificamente i sobborghi operai degradati delle città industriali inglesi in epoca vittoriana."},
+ {q:"Nel 1819 un reggimento di cavalleria (ussari) caricò un meeting di 50.000 persone a:", a:"Saint Peter Fields", cat:"luogo",
+  exp:"A Saint Peter Fields, presso Manchester, nel 1819 gli ussari caricarono un comizio pacifico di 50.000 persone che chiedevano la riforma parlamentare: morti e centinaia di feriti. L'episodio è noto ironicamente come \u201cmassacro di Peterloo\u201d, sul calco di Waterloo."},
+ {q:"L'anno in cui il Factory Act portò agli operai la prima legge sulla protezione dei lavoratori (stesso anno dell'abolizione della schiavitù nelle Indie occidentali):", a:"1833", cat:"anno",
+  exp:"Il 1833 è una data-cerniera da ricordare per tre eventi: il Factory Act (prima legge di tutela dei lavoratori, con limiti al lavoro minorile e ispettori di fabbrica), l'abolizione della schiavitù nelle Indie occidentali britanniche e la costituzione aristocratica del Cile."},
+ {q:"I cambiamenti intervenuti tra il 1760 e il 1830 nella struttura sociale ed economica britannica vengono tradizionalmente riassunti con l'espressione:", a:"Prima Rivoluzione Industriale", cat:"concetto",
+  exp:"L'espressione \u201cPrima Rivoluzione Industriale\u201d riassume i mutamenti della struttura economico-sociale britannica tra il 1760 e il 1830: meccanizzazione del tessile, vapore, carbone, fabbrica e nascita del proletariato industriale."},
+ {q:"L'Inghilterra era ricca di stratigrafie del:", a:"Carbonifero", cat:"concetto",
+  exp:"Il sottosuolo inglese era ricco di stratigrafie del Carbonifero, il periodo geologico che ha formato i giacimenti di carbon fossile: carbone abbondante e a buon mercato fu il combustibile che alimentò macchine a vapore e siderurgia."},
+ {q:"I testi spagnoli del Seicento contenenti consigli e propositi di politica economica presero il nome di:", a:"Arbitros", cat:"concetto",
+  exp:"Nella Spagna del Seicento gli arbitrios erano i testi con suggerimenti di politica economica per incrementare il commercio o rimediare alle carestie; i loro autori erano detti arbitristas. Mostrano la partecipazione attiva di popolo e scrittori alla crisi spagnola."},
+ {q:"Coloro che estendevano il concetto di riforma dal campo morale a quello della fede e del dogma erano detti:", a:"Agitatori religiosi", cat:"concetto",
+  exp:"Gli \u201cagitatori religiosi\u201d non si accontentavano di riformare i costumi del clero: estendevano la riforma alla fede e al dogma, giudicando insufficienti le riforme per riportare la Chiesa alla purezza dei tempi apostolici. Wyclif e Hus ne sono i due esempi classici."},
+ {q:"Lo scrittore vittoriano che a 12 anni lavorava in fabbrica e scrisse del lavoro minorile:", a:"Charles Dickens", cat:"persona",
+  exp:"Charles Dickens a 12 anni lavorò in una fabbrica di lucido da scarpe mentre il padre era in prigione per debiti: l'esperienza segnò per sempre i suoi romanzi (Oliver Twist, David Copperfield), che denunciarono il lavoro minorile nell'Inghilterra vittoriana."},
+ {q:"Alberto, principe di Sassonia-Coburgo, sposato dalla regina Vittoria nel 1840, era, dal punto di vista della parentela:", a:"Suo cugino", cat:"concetto",
+  exp:"Alberto di Sassonia-Coburgo-Gotha era cugino primo di Vittoria: un matrimonio dinastico interno alla stessa casata tedesca, combinato dallo zio comune Leopoldo del Belgio. Attenzione: la stessa domanda può vertere sulla sua posizione politica (era conservatore)."},
+ {q:"Alberto, principe di Sassonia-Coburgo, era politicamente:", a:"Conservatore", cat:"concetto",
+  exp:"Politicamente Alberto era conservatore, pur essendo un attivo promotore di scienza, tecnica e industria (sua la Grande Esposizione del 1851). Attenzione: la stessa domanda può vertere sulla parentela con Vittoria (era suo cugino)."},
+ {q:"Nei primi anni del lungo regno della regina Vittoria il suo mentore fu:", a:"Lord Melbourne", cat:"persona",
+  exp:"Il primo ministro whig Lord Melbourne fu il mentore politico della giovanissima Vittoria, salita al trono a 18 anni nel 1837: la istruì nei meccanismi del governo e ne fu il principale consigliere nei primi anni di regno."},
+ {q:"A metà del XVIII secolo scrisse uno dei primi saggi di scienza sociale sulle attese di vita:", a:"Antoine Deparcieux", cat:"persona",
+  exp:"Antoine Deparcieux, matematico francese, scrisse a metà Settecento uno dei primi saggi di scienza sociale, costruendo tavole di mortalità e attese di vita: un esempio pionieristico di studio quantitativo della società."},
+ {q:"Le celebrazioni carnevalesche usuali in Francia fino al Settecento erano note come:", a:"Feste dei folli", cat:"concetto",
+  exp:"Le \u201cfeste dei folli\u201d erano le celebrazioni carnevalesche francesi in cui le gerarchie sociali ed ecclesiastiche venivano ritualmente rovesciate: il mondo \u201calla rovescia\u201d per pochi giorni, come valvola di sfogo della società di antico regime."},
+ {q:"In Italia la prima tipografia fu aperta nel 1465 a:", a:"Subiaco", cat:"luogo",
+  exp:"La prima tipografia italiana fu aperta nel 1465 nel monastero benedettino di Subiaco, vicino Roma, dai tipografi tedeschi Sweynheym e Pannartz, allievi della tradizione di Gutenberg. Venezia arrivò nel 1469, ma poi divenne la capitale editoriale d'Europa."},
+ {q:"In Catalogna e Portogallo scoppiarono due rivoluzioni parallele per l'emancipazione dal dominio castigliano nel:", a:"1640", cat:"anno",
+  exp:"Nel 1640 Catalogna e Portogallo insorsero quasi in parallelo contro il dominio castigliano di Filippo IV, esasperate dalle richieste fiscali e militari di Olivares. Il Portogallo riconquistò l'indipendenza con i Braganza; la Catalogna fu ripresa."},
+ {q:"Nel 1469 l'arte della stampa approdò a Venezia; qui si trasferì l'editore e umanista:", a:"Aldo Manuzio", cat:"persona",
+  exp:"Aldo Manuzio, editore e umanista, si trasferì a Venezia e vi fondò il principale centro italiano di produzione dei testi classici greci e latini: le edizioni aldine, celebri per accuratezza filologica e per il formato tascabile in corsivo."},
+ {q:"L'idea di un cannocchiale giunge a Galileo da un'invenzione:", a:"Olandese", cat:"concetto",
+  exp:"L'\u201cocchiale\u201d che avvicinava gli oggetti lontani era stato inventato in Olanda (Hans Lippershey, 1608). Galileo ne sentì parlare, lo ricostruì e lo perfezionò, trasformandolo per primo in uno strumento di osservazione scientifica del cielo."},
+ {q:"A teorizzare il riassorbimento della disoccupazione industriale col ritorno ai campi, dove cooperative operaie acquisterebbero grandi estensioni di terreno per la lottizzazione in piccole proprietà, fu:", a:"O'Connor", cat:"persona",
+  exp:"Fu Feargus O'Connor, leader cartista, a teorizzare il ritorno alla terra come cura della disoccupazione industriale: cooperative operaie avrebbero acquistato grandi tenute da lottizzare in piccole proprietà contadine (il suo Land Plan)."},
+ {q:"Dopo il 1820 in Inghilterra la distruzione delle prime trebbiatrici da parte dei braccianti agricoli ebbe come protagonista-simbolo:", a:"Captain Swing", cat:"persona",
+  exp:"Le rivolte dei braccianti agricoli contro le trebbiatrici (che toglievano loro il lavoro invernale) firmavano lettere minatorie col nome mitico di \u201cCaptain Swing\u201d: una figura simbolica, come il King Ludd evocato dai luddisti delle fabbriche."},
+ {q:"A negare che la crisi del Seicento fosse legata ai processi di produzione e alla necessità di abbattere il sistema feudale per quello capitalistico fu:", a:"Trevor-Roper", cat:"persona",
+  exp:"Trevor-Roper respinse la lettura marxista della crisi del Seicento (crisi di produzione, passaggio dal feudalesimo al capitalismo): per lui la crisi stava nelle relazioni tra società e Stato, cioè nel peso della \u201ccorte\u201d sul \u201cpaese\u201d."},
+ {q:"L'epidemia del 1630 fu veicolata da:", a:"Le truppe impegnate nella Guerra dei Trent'anni", cat:"concetto",
+  exp:"La peste del 1630 fu portata in Italia dai lanzichenecchi scesi per la guerra di successione di Mantova, episodio della Guerra dei Trent'anni: gli eserciti in marcia erano il principale veicolo di diffusione delle epidemie."},
+ {q:"Nel 1781 il brevetto della macchina a vapore si realizzò grazie all'ingegnosità di:", a:"James Watt", cat:"persona",
+  exp:"Nel 1781 James Watt brevettò il meccanismo che trasformava il moto alternato dello stantuffo in moto rotativo: da quel momento il vapore poté azionare qualunque macchina di fabbrica, non solo pompe. Newcomen (pompa mineraria) e Trevithick (locomotive) sono i distrattori tipici."},
+ {q:"La regina Vittoria salì al trono nel 1837 a:", a:"Diciotto anni", cat:"numero",
+  exp:"Vittoria salì al trono nel 1837, a diciotto anni, alla morte dello zio Guglielmo IV. Regnò fino al 1901: il più lungo regno britannico fino ad allora, che diede il nome all'epoca vittoriana."},
+ {q:"Dove è stata costruita nel 1863 la prima metropolitana al mondo?", a:"Londra", cat:"luogo",
+  exp:"La prima metropolitana al mondo fu la Metropolitan Railway di Londra, inaugurata nel 1863 con trazione a vapore: risposta alla congestione della più grande città industriale del mondo."},
+ {q:"Recentemente a insistere sul carattere globale della crisi del Seicento è stato:", a:"Geoffrey Parker", cat:"persona",
+  exp:"Geoffrey Parker ha collegato la crisi del Seicento alla piccola glaciazione su scala planetaria: guerre, carestie e rivolte investirono contemporaneamente Europa, Cina e Impero ottomano. Da qui la sua insistenza sul carattere \u201cglobale\u201d della crisi."},
+ {q:"L'emancipazione dell'uomo dal pater familias avveniva soprattutto tramite:", a:"Il matrimonio", cat:"concetto",
+  exp:"L'uomo restava sotto l'autorità del pater familias finché non si sposava: era il matrimonio a fondare un nucleo domestico autonomo e a sancire l'indipendenza giuridica e sociale del figlio maschio."},
+ {q:"Il mondo della borghesia urbana non costruì un'identità antagonista a quella della nobiltà: la sua massima aspirazione era integrarsi per mezzo di:", a:"Alleanze matrimoniali", cat:"concetto",
+  exp:"La borghesia urbana d'antico regime non sfidò culturalmente la nobiltà: aspirava a entrarvi. Lo strumento principale erano le alleanze matrimoniali — far sposare i figli con famiglie nobili, scambiando ricchezza borghese con prestigio aristocratico."},
+ {q:"Chi ha ben documentato come i più feroci persecutori delle streghe fossero i dotti?", a:"Hugh Trevor-Roper", cat:"persona",
+  exp:"Hugh Trevor-Roper documentò come la caccia alle streghe fosse alimentata soprattutto dai dotti — giuristi, teologi, inquisitori — e non dall'ignoranza popolare: la demonologia era una costruzione colta. È lo stesso storico della tesi sulla crisi del Seicento."},
+ {q:"La regina Vittoria sostenne fermamente la politica liberista di:", a:"Robert Peel", cat:"persona",
+  exp:"Vittoria sostenne la politica liberista del primo ministro Robert Peel, culminata nell'abolizione delle Corn Laws (1846), i dazi sul grano: una svolta liberoscambista che abbassò il prezzo del pane a favore dei ceti urbani."},
+ {q:"L'uomo originario di una famiglia di artigiani gallesi che con la sua fabbrica a New Lanark entrò nella classe dei nuovi imprenditori e impersonò un'ideologia nuova:", a:"Robert Owen", cat:"persona",
+  exp:"Robert Owen, gallese di famiglia artigiana, con la filanda modello di New Lanark (orari ridotti, scuole, condizioni umane) entrò nella nuova classe imprenditoriale e impersonò il socialismo utopistico e cooperativo: da lui New Harmony, la GNCU e l'ispirazione di Rochdale."},
+ {q:"Il \u201cMysterium Cosmographicum\u201d è un'opera di:", a:"Keplero", cat:"persona",
+  exp:"Il Mysterium Cosmographicum (1596) è la prima opera di Johannes Keplero: una difesa del sistema copernicano su basi geometriche, che tenta di spiegare le distanze dei pianeti con i solidi platonici. Non confonderlo con le opere di Copernico o Galileo."},
+ {q:"I fenomeni di urbanizzazione dell'età moderna erano più simili a quelli:", a:"Dell'età medievale", cat:"concetto",
+  exp:"Le città dell'età moderna crescevano ancora con le logiche medievali: commercio, corte, funzioni amministrative e religiose. Sarà solo l'industrializzazione a cambiare natura e scala dell'urbanizzazione, con città-fabbrica come Manchester."},
+ {q:"I manufatti di cotone realizzati in India e importati dalla Compagnia inglese delle Indie cominciarono a conquistare i mercati europei, americani e africani nella prima metà del:", a:"Settecento", cat:"anno",
+  exp:"I cotonami indiani importati dalla Compagnia inglese delle Indie conquistarono i mercati europei, americani e africani nella prima metà del Settecento: fu proprio per sostituire quelle importazioni che l'Inghilterra sviluppò in patria la produzione meccanizzata di cotone."},
+ {q:"Autore del trattato sulla luce (pubblicato nel 1690):", a:"Huygens", cat:"persona",
+  exp:"Christiaan Huygens pubblicò nel 1690 il Traité de la lumière, in cui espose la teoria ondulatoria della luce. È lo stesso scienziato dell'isocronismo del cicloide e degli orologi a pendolo: due domande d'esame diverse, stesso autore."},
+ {q:"L'inglese John Wyclif (1330–1384) e il boemo Jan Hus (1369–1415) furono due:", a:"Agitatori religiosi", cat:"concetto",
+  exp:"Wyclif e Hus furono i due grandi \u201cagitatori religiosi\u201d pre-luterani: estesero la riforma dal piano morale a quello della fede e del dogma, anticipando Lutero di un secolo. Hus finì sul rogo al concilio di Costanza (1415)."},
+ {q:"Dalla \u201cCarta del popolo\u201d (The People's Charter) elaborata nel 1836 nacque il movimento:", a:"Cartista", cat:"concetto",
+  exp:"Il movimento prese il nome proprio dal documento: dalla \u201cCarta del popolo\u201d (People's Charter) del 1836 nacque il cartismo, il gigantesco fenomeno popolare che chiedeva suffragio universale maschile e riforme democratiche."},
+ {q:"L'origine nazionale di Robert Owen era:", a:"Gallese", cat:"concetto",
+  exp:"Robert Owen era gallese: nato a Newtown, nel Galles, da una famiglia di artigiani. La domanda d'esame può presentarsi anche solo con la risposta \u201cgallese\u201d riferita all'imprenditore simbolo delle nuove teorie sociali."}
 ];
 
 /* ===== Pool extra di distrattori per categorie poco popolate ===== */
@@ -392,13 +523,13 @@ function buildFPQuestion(item){
   if (pool.length < 3) pool = pool.concat(FP.filter(x => x.a !== item.a).map(x => x.a));
   const distractors = shuffle([...new Set(pool)]).slice(0, 3);
   const options = shuffle([item.a, ...distractors]);
-  return { source:"Fuori piattaforma", q:item.q, o:options, c:options.indexOf(item.a) };
+  return { source:"Fuori piattaforma", q:item.q, o:options, c:options.indexOf(item.a), exp:item.exp };
 }
 
 function buildMCQQuestion(item){
   const pairs = item.o.map((txt, i) => ({ txt, ok: i === item.c }));
   const mixed = shuffle(pairs);
-  return { source:"Quiz per temi · " + item.t, q:item.q, o:mixed.map(p => p.txt), c:mixed.findIndex(p => p.ok) };
+  return { source:"Quiz per temi · " + item.t, q:item.q, o:mixed.map(p => p.txt), c:mixed.findIndex(p => p.ok), exp:item.exp };
 }
 
 const state = { questions:[], idx:0, correct:0, wrong:[], mode:"", instantFeedback:true, answered:false };
@@ -411,7 +542,7 @@ function startQuiz(mode){
       ...FP.map(buildFPQuestion)
     ]);
     qs = pool.slice(0, 30);
-    state.instantFeedback = false;
+    state.instantFeedback = true;
     $("res-label").textContent = "Esito della simulazione d'esame";
   } else if (mode === "mcq") {
     qs = shuffle(MCQ.map(buildMCQQuestion));
@@ -446,13 +577,16 @@ function renderQuestion(){
   const q = state.questions[state.idx];
   state.answered = false;
   $("quiz-counter").textContent = "Domanda " + (state.idx + 1) + " / " + state.questions.length;
-  $("quiz-score").textContent = state.instantFeedback ? ("Corrette: " + state.correct) : "Simulazione — voto alla fine";
+  $("quiz-score").textContent = "Corrette: " + state.correct + (state.mode === "esame" ? " · Voto in trentesimi alla fine" : "");
   $("quiz-bar").style.width = ((state.idx) / state.questions.length * 100) + "%";
   $("q-source").textContent = q.source;
   $("q-text").textContent = q.q;
   const fb = $("q-feedback");
   fb.textContent = "";
   fb.className = "feedback";
+  const ex = $("q-explain");
+  ex.classList.add("hidden");
+  ex.innerHTML = "";
   $("btn-next").classList.add("hidden");
 
   const box = $("q-options");
@@ -483,18 +617,21 @@ function onAnswer(e){
   buttons.forEach(b => { b.disabled = true; });
   const isCorrect = chosen === q.c;
   if (isCorrect) state.correct++;
-  else state.wrong.push({ q:q.q, given:q.o[chosen], right:q.o[q.c], source:q.source });
+  else state.wrong.push({ q:q.q, given:q.o[chosen], right:q.o[q.c], source:q.source, exp:q.exp });
 
-  if (state.instantFeedback) {
-    buttons[q.c].classList.add("correct");
-    if (!isCorrect) buttons[chosen].classList.add("wrong");
-    const fb = $("q-feedback");
-    fb.textContent = isCorrect ? "Corretto!" : ("Sbagliato — la risposta giusta è: " + q.o[q.c]);
-    fb.classList.add(isCorrect ? "ok" : "err");
-  } else {
-    buttons[chosen].style.borderColor = "var(--accent)";
-    buttons[chosen].style.background = "var(--accent-soft)";
-  }
+  buttons[q.c].classList.add("correct");
+  if (!isCorrect) buttons[chosen].classList.add("wrong");
+  const fb = $("q-feedback");
+  fb.textContent = isCorrect ? "Corretto!" : ("Sbagliato — la risposta giusta è: " + q.o[q.c]);
+  fb.classList.add(isCorrect ? "ok" : "err");
+  const ex = $("q-explain");
+  const label = document.createElement("b");
+  label.textContent = isCorrect ? "Perché è corretta" : "Perché hai sbagliato";
+  const body = document.createElement("span");
+  body.textContent = q.exp;
+  ex.appendChild(label);
+  ex.appendChild(body);
+  ex.classList.remove("hidden");
   const next = $("btn-next");
   next.textContent = state.idx === state.questions.length - 1 ? "Vedi risultato →" : "Avanti →";
   next.classList.remove("hidden");
@@ -531,7 +668,8 @@ function showResults(){
       const p1 = document.createElement("div"); p1.className = "q"; p1.textContent = w.q;
       const p2 = document.createElement("div"); p2.className = "a-wrong"; p2.textContent = "La tua risposta: " + w.given;
       const p3 = document.createElement("div"); p3.className = "a-right"; p3.textContent = "Risposta corretta: " + w.right;
-      d.appendChild(p1); d.appendChild(p2); d.appendChild(p3);
+      const p4 = document.createElement("div"); p4.className = "exp"; p4.textContent = w.exp;
+      d.appendChild(p1); d.appendChild(p2); d.appendChild(p3); d.appendChild(p4);
       rev.appendChild(d);
     });
   } else {
