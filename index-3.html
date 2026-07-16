@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storia Sociale — Preparazione Esame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0c1e;
+    --bg-card:#171430;
+    --bg-card-2:#1e1a3d;
+    --accent:#7c6ff7;
+    --accent-soft:rgba(124,111,247,.16);
+    --accent-line:rgba(124,111,247,.35);
+    --text:#eceaf8;
+    --text-dim:#a49fc9;
+    --ok:#4ade80;
+    --ok-soft:rgba(74,222,128,.14);
+    --err:#f87171;
+    --err-soft:rgba(248,113,113,.14);
+    --gold:#fbbf24;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'DM Sans',sans-serif;
+    min-height:100vh;
+    line-height:1.55;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:32px 20px 80px}
+  header.site{
+    text-align:center;
+    padding:28px 0 20px;
+    border-bottom:1px solid var(--accent-line);
+    margin-bottom:32px;
+  }
+  header.site h1{
+    font-family:'DM Serif Display',serif;
+    font-size:2.2rem;
+    font-weight:400;
+    letter-spacing:.5px;
+  }
+  header.site h1 span{color:var(--accent)}
+  header.site p{color:var(--text-dim);margin-top:6px;font-size:.95rem}
+  .hidden{display:none !important}
+
+  /* ---- home ---- */
+  .stats-row{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:28px;
+  }
+  .stat{
+    background:var(--bg-card);border:1px solid var(--accent-line);
+    border-radius:var(--radius);padding:12px 20px;text-align:center;min-width:130px;
+  }
+  .stat b{font-size:1.5rem;color:var(--accent);display:block;font-family:'DM Serif Display',serif;font-weight:400}
+  .stat small{color:var(--text-dim);font-size:.8rem}
+  .mode-card{
+    background:var(--bg-card);border:1px solid var(--accent-line);
+    border-radius:var(--radius);padding:22px;margin-bottom:16px;
+    cursor:pointer;transition:transform .15s,border-color .15s,background .15s;
+  }
+  .mode-card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--bg-card-2)}
+  .mode-card h2{font-family:'DM Serif Display',serif;font-weight:400;font-size:1.35rem;margin-bottom:6px}
+  .mode-card h2 em{color:var(--accent);font-style:normal}
+  .mode-card p{color:var(--text-dim);font-size:.92rem}
+  .badge{
+    display:inline-block;background:var(--accent-soft);color:var(--accent);
+    border-radius:20px;padding:2px 12px;font-size:.75rem;font-weight:700;
+    margin-bottom:10px;letter-spacing:.5px;text-transform:uppercase;
+  }
+
+  /* ---- quiz ---- */
+  .quiz-top{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:14px;color:var(--text-dim);font-size:.9rem;flex-wrap:wrap;gap:8px;
+  }
+  .progress{
+    height:6px;background:var(--bg-card);border-radius:3px;overflow:hidden;margin-bottom:24px;
+  }
+  .progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s;border-radius:3px}
+  .q-card{
+    background:var(--bg-card);border:1px solid var(--accent-line);
+    border-radius:var(--radius);padding:26px;
+  }
+  .q-source{
+    font-size:.72rem;letter-spacing:1px;text-transform:uppercase;
+    color:var(--accent);margin-bottom:12px;font-weight:700;
+  }
+  .q-text{font-size:1.12rem;font-weight:500;margin-bottom:22px}
+  .opt{
+    display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+    background:var(--bg-card-2);border:1px solid transparent;color:var(--text);
+    border-radius:10px;padding:14px 16px;margin-bottom:10px;cursor:pointer;
+    font-family:'DM Sans',sans-serif;font-size:1rem;transition:border-color .15s,background .15s;
+  }
+  .opt:hover:not(:disabled){border-color:var(--accent)}
+  .opt:disabled{cursor:default}
+  .opt .letter{
+    flex:0 0 26px;height:26px;border-radius:50%;background:var(--accent-soft);
+    color:var(--accent);display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:.85rem;
+  }
+  .opt.correct{background:var(--ok-soft);border-color:var(--ok)}
+  .opt.correct .letter{background:var(--ok);color:#06220f}
+  .opt.wrong{background:var(--err-soft);border-color:var(--err)}
+  .opt.wrong .letter{background:var(--err);color:#2b0808}
+  .feedback{margin-top:6px;font-size:.95rem;min-height:24px}
+  .feedback.ok{color:var(--ok)}
+  .feedback.err{color:var(--err)}
+  .btn{
+    background:var(--accent);color:#0e0c1e;border:none;border-radius:10px;
+    padding:13px 26px;font-family:'DM Sans',sans-serif;font-weight:700;
+    font-size:1rem;cursor:pointer;transition:opacity .15s;
+  }
+  .btn:hover{opacity:.88}
+  .btn.ghost{background:transparent;color:var(--text-dim);border:1px solid var(--accent-line)}
+  .btn.ghost:hover{color:var(--text);border-color:var(--accent)}
+  .quiz-actions{display:flex;justify-content:space-between;margin-top:20px;gap:10px;flex-wrap:wrap}
+
+  /* ---- results ---- */
+  .result-card{
+    background:var(--bg-card);border:1px solid var(--accent-line);
+    border-radius:var(--radius);padding:36px;text-align:center;
+  }
+  .voto{
+    font-family:'DM Serif Display',serif;font-size:4.5rem;line-height:1;
+    color:var(--accent);margin:10px 0 4px;
+  }
+  .voto.pass{color:var(--ok)}
+  .voto.fail{color:var(--err)}
+  .voto.lode{color:var(--gold)}
+  .result-card .sub{color:var(--text-dim);margin-bottom:22px}
+  .review{margin-top:28px;text-align:left}
+  .review h3{
+    font-family:'DM Serif Display',serif;font-weight:400;font-size:1.25rem;
+    margin-bottom:14px;border-bottom:1px solid var(--accent-line);padding-bottom:8px;
+  }
+  .rev-item{
+    background:var(--bg-card);border:1px solid var(--accent-line);
+    border-radius:10px;padding:16px;margin-bottom:12px;font-size:.95rem;
+  }
+  .rev-item .q{font-weight:500;margin-bottom:8px}
+  .rev-item .a-wrong{color:var(--err)}
+  .rev-item .a-right{color:var(--ok)}
+  footer{
+    text-align:center;color:var(--text-dim);font-size:.8rem;margin-top:48px;
+    border-top:1px solid var(--accent-line);padding-top:18px;
+  }
+  @media (max-width:520px){
+    header.site h1{font-size:1.7rem}
+    .q-card{padding:18px}
+    .result-card{padding:24px}
+    .voto{font-size:3.4rem}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="site">
+  <h1>Storia <span>Sociale</span></h1>
+  <p>Preparazione esame · Università Telematica Pegaso</p>
+</header>
+
+<!-- ================= HOME ================= -->
+<section id="view-home">
+  <div class="stats-row">
+    <div class="stat"><b id="stat-mcq">0</b><small>Quiz per temi</small></div>
+    <div class="stat"><b id="stat-fp">0</b><small>Fuori piattaforma</small></div>
+    <div class="stat"><b id="stat-tot">0</b><small>Domande totali</small></div>
+  </div>
+
+  <div class="mode-card" id="mode-esame">
+    <span class="badge">Simulazione</span>
+    <h2>Simulazione <em>esame</em> — 30 domande</h2>
+    <p>30 domande casuali da entrambe le raccolte, nessun feedback immediato. Voto finale in trentesimi con revisione degli errori.</p>
+  </div>
+
+  <div class="mode-card" id="mode-mcq">
+    <span class="badge">Allenamento</span>
+    <h2>Quiz riorganizzati <em>per temi</em></h2>
+    <p>Le domande a risposta multipla della raccolta ufficiale (opzioni originali A–D). Feedback immediato dopo ogni risposta.</p>
+  </div>
+
+  <div class="mode-card" id="mode-fp">
+    <span class="badge">Allenamento</span>
+    <h2>Domande <em>fuori piattaforma</em></h2>
+    <p>Le domande raccolte fuori piattaforma, con distrattori generati automaticamente a ogni sessione. Feedback immediato.</p>
+  </div>
+
+  <div class="mode-card" id="mode-all">
+    <span class="badge">Maratona</span>
+    <h2>Tutte le domande, <em>ordine casuale</em></h2>
+    <p>L'intera banca dati mescolata, con feedback immediato. Ideale per il ripasso completo prima dell'esame.</p>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="view-quiz" class="hidden">
+  <div class="quiz-top">
+    <span id="quiz-counter">Domanda 1 / 30</span>
+    <span id="quiz-score"></span>
+  </div>
+  <div class="progress"><i id="quiz-bar"></i></div>
+  <div class="q-card">
+    <div class="q-source" id="q-source"></div>
+    <div class="q-text" id="q-text"></div>
+    <div id="q-options"></div>
+    <div class="feedback" id="q-feedback"></div>
+  </div>
+  <div class="quiz-actions">
+    <button class="btn ghost" id="btn-exit">Esci</button>
+    <button class="btn hidden" id="btn-next">Avanti →</button>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="view-results" class="hidden">
+  <div class="result-card">
+    <p class="sub" id="res-label">Esito della simulazione</p>
+    <div class="voto" id="res-voto">0/30</div>
+    <p class="sub" id="res-detail"></p>
+    <button class="btn" id="btn-retry">Nuova sessione</button>
+    <button class="btn ghost" id="btn-home">Torna alla home</button>
+  </div>
+  <div class="review" id="res-review"></div>
+</section>
+
+<footer>Banca dati: raccolta quiz per temi + domande fuori piattaforma · Solo per uso di studio personale</footer>
+</div>
+
+<script>
+/* =========================================================
+   BANCA 1 — Quiz riorganizzati per temi (opzioni originali)
+   ========================================================= */
+const MCQ = [
+ {t:"Crisi del Seicento", q:"Secondo Trevor-Roper, la principale causa della crisi del Seicento riguardava:", o:["Il commercio con l'Africa","Le tensioni tra società e Stato","L'eccesso di produzione agricola","L'espansione coloniale"], c:1},
+ {t:"Crisi del Seicento", q:"Chi ha recentemente sostenuto con forza il carattere globale della crisi del Seicento?", o:["Carlo Cipolla","Fernand Braudel","Geoffrey Parker","Eric Hobsbawm"], c:2},
+ {t:"Crisi del Seicento", q:"Trevor-Roper negava che la crisi fosse dovuta a:", o:["Mutamenti climatici","Crisi del sistema feudale","Aumenti demografici","Guerre europee"], c:1},
+ {t:"Agricoltura e clima", q:"Una delle cause della crisi agraria secentesca è stata collegata a:", o:["L'aumento dei prezzi del cotone","La piccola glaciazione","L'invasione di insetti parassiti","La scarsità di ferro"], c:1},
+ {t:"Agricoltura e clima", q:"In Europa preindustriale, la resa agricola dipendeva soprattutto da:", o:["Tecnologie agricole avanzate","Concimi chimici","Proprietà fondiaria pubblica","Condizioni climatiche"], c:3},
+ {t:"Rivolte del Seicento", q:"Le rivoluzioni parallele in Catalogna e Portogallo avvennero nel:", o:["1500","1600","1640","1700"], c:2},
+ {t:"Rivolte del Seicento", q:"L'epidemia del 1630 fu diffusa soprattutto tramite:", o:["Navi mercantili","Truppe impegnate nella Guerra dei Trent'anni","Clima avverso","Topi infetti provenienti dall'Asia"], c:1},
+ {t:"Galileo e la scienza", q:"L'ispirazione per il cannocchiale di Galileo provenne da:", o:["Germania","Olanda","Francia","Spagna"], c:1},
+ {t:"Galileo e la scienza", q:"La commissione che rivalutò il caso Galileo (1992) era presieduta da:", o:["Carlo Maria Martini","Joseph Ratzinger","Paul Poupard","Jean Daniélou"], c:2},
+ {t:"Galileo e la scienza", q:"L'editore che pubblicò il \u201cDialogo\u201d di Galileo ad Arcetri fu:", o:["Manuzio","Bodoni","Elzevir","Plantin"], c:2},
+ {t:"Astronomia e fisica", q:"Il De revolutionibus segna l'inizio della:", o:["Rivoluzione industriale","Rivoluzione copernicana","Rivoluzione francese","Riforma protestante"], c:1},
+ {t:"Astronomia e fisica", q:"Chi dimostrò sperimentalmente il moto della Terra nel 1791–92?", o:["Keplero","Huygens","Guglielmini","Tycho Brahe"], c:2},
+ {t:"Astronomia e fisica", q:"L'isocronismo del cicloide fu dimostrato da:", o:["Newton","Huygens","Leibniz","Pascal"], c:1},
+ {t:"Strutture familiari", q:"L'emancipazione degli uomini dalla patria potestà avveniva soprattutto tramite:", o:["Lavoro indipendente","Acquisto della casa","Matrimonio","Servizio militare"], c:2},
+ {t:"Strutture familiari", q:"Le giovani donne non ancora sposate venivano definite:", o:["Donne adulte","Da marito","Conventuali","Giovani madri"], c:1},
+ {t:"Donna e società", q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra:", o:["20-25 anni","25-30 anni","35-40 anni","45-50 anni"], c:2},
+ {t:"Donna e società", q:"Nella Francia del Settecento le \u201cdonne di spirito\u201d partecipavano attivamente a:", o:["Assemblee politiche","Accademie militari","Salotti culturali","Corporazioni commerciali"], c:2},
+ {t:"Donna e società", q:"Nel Quattrocento e Cinquecento l'accesso femminile alle corporazioni dipendeva soprattutto da:", o:["Meriti individuali","Esami pubblici","Legami familiari","Residenza urbana"], c:2},
+ {t:"Inghilterra industriale", q:"Il primo settore in cui si avviarono trasformazioni industriali fu:", o:["Metallurgia","Tessile","Chimica","Cantieristica"], c:1},
+ {t:"Inghilterra industriale", q:"La Grand National Consolidated Union nacque nel:", o:["1830","1834","1840","1850"], c:1},
+ {t:"Inghilterra industriale", q:"Il \u201cFactory Act\u201d, prima legge di rilievo per la tutela dei lavoratori, fu introdotto nel:", o:["1800","1820","1833","1848"], c:2},
+ {t:"Inghilterra industriale", q:"Il perfezionamento della macchina a vapore del 1781 è attribuito a:", o:["Trevithick","Newcomen","Watt","Brindley"], c:2},
+ {t:"Urbanizzazione", q:"La crescita urbana inglese tra il 1800 e il 1900 portò la popolazione cittadina dal 30% al:", o:["40%","60%","75%","90%"], c:2},
+ {t:"Urbanizzazione", q:"Le abitazioni operaie nelle città industriali erano spesso situate in:", o:["Quartieri borghesi","Slums","Centri storici","Case comunali moderne"], c:1},
+ {t:"Urbanizzazione", q:"La diffusa bevanda alcolica associata al degrado urbano della prima industrializzazione era:", o:["Whisky","Birra scura","Gin","Sidro"], c:2},
+ {t:"Movimenti e protagonisti", q:"John Doherty organizzò l'unione generale di:", o:["Fabbri","Filatori","Muratori","Agricoltori"], c:1},
+ {t:"Movimenti e protagonisti", q:"Il giornale \u201cThe Voice of the People\u201d era legato al movimento di:", o:["Marx","Owen","Doherty","Smith"], c:2},
+ {t:"Movimenti e protagonisti", q:"Il cartismo nacque dalla \u201cPeople's Charter\u201d scritta nel:", o:["1820","1836","1848","1860"], c:1},
+ {t:"Migrazioni e capitalismo", q:"Le grandi migrazioni tra fine Ottocento e inizio Novecento si diressero soprattutto verso:", o:["Sud America","Medio Oriente","USA e Canada","Russia"], c:2},
+ {t:"Migrazioni e capitalismo", q:"L'industrializzazione portò alla nascita di un nuovo sistema economico, definito:", o:["Mercantilismo","Capitalismo","Feudalesimo moderno","Corporativismo"], c:1},
+ {t:"Politica europea", q:"Il Reform Act britannico fu approvato nel:", o:["1815","1832","1848","1867"], c:1},
+ {t:"Politica europea", q:"Il programma radicale inglese del 1816–1819 chiedeva soprattutto:", o:["Abolizione dei partiti","Suffragio universale e riforma parlamentare","Mantenimento dei privilegi nobiliari","Centralizzazione militare"], c:1},
+ {t:"Politica europea", q:"La regina Vittoria salì al trono a:", o:["14 anni","16 anni","18 anni","20 anni"], c:2},
+ {t:"Politica europea", q:"Il principe Alberto, marito della regina Vittoria, era politicamente:", o:["Liberale","Conservatore","Socialista","Neutrale"], c:1},
+ {t:"Stampa e cultura", q:"La prima tipografia in territorio italiano fu fondata nel 1465 a:", o:["Venezia","Milano","Firenze","Subiaco"], c:3},
+ {t:"Stampa e cultura", q:"Uno dei centri più importanti dell'editoria rinascimentale, fondato da Manuzio, sorse a:", o:["Roma","Venezia","Bologna","Torino"], c:1},
+ {t:"Stampa e cultura", q:"L'uso del latino come lingua comune favorì:", o:["La censura religiosa","La diffusione europea dei libri","La proibizione dei testi scientifici","La frammentazione culturale"], c:1},
+ {t:"Rivoluzione industriosa", q:"In Asia e nell'Europa orientale, mentre l'Occidente viveva la rivoluzione industriale, si sviluppò la:", o:["Rivoluzione agraria","Rivoluzione industriosa","Rivoluzione commerciale","Rivoluzione politica"], c:1},
+ {t:"Domande miste", q:"Le opere di Lutero raggiunsero circa:", o:["10.000 copie","100.000 copie","300.000 copie","1 milione"], c:2},
+ {t:"Domande miste", q:"L'origine nazionale attribuita a un imprenditore che divenne simbolo di nuove teorie sociali era:", o:["Scozzese","Irlandese","Gallese","Inglese"], c:2},
+ {t:"Domande miste", q:"L'identità maschile nell'età moderna era centrata soprattutto sull'investimento nella:", o:["Mobilità sociale","Ricchezza personale","Discendenza","Guerra"], c:2}
+];
+
+/* =========================================================
+   BANCA 2 — Fuori piattaforma (distrattori generati a runtime)
+   cat: persona | anno | luogo | concetto | numero | opera
+   ========================================================= */
+const FP = [
+ {q:"Nelle periferie degradate delle città inglesi, tra le baracche degli operai, iniziò a diffondersi una nuova bevanda:", a:"Il gin", cat:"concetto"},
+ {q:"I primi luoghi dove le donne apparvero sulla scena culturale, alla fine del XVII secolo in Francia, furono:", a:"I salons parigini", cat:"luogo"},
+ {q:"Il De revolutionibus orbium coelestium segna l'inizio della:", a:"Rivoluzione copernicana", cat:"concetto"},
+ {q:"Alla fine del '700 un britannico costruisce macchine a vapore per le strade normali e introduce modifiche che consentono loro di muoversi su quelle ferrate:", a:"Richard Trevithick", cat:"persona"},
+ {q:"La Guerra dei Trent'anni si svolse negli anni:", a:"1618–1648", cat:"anno"},
+ {q:"La Grand National Consolidated Union era:", a:"Un movimento sindacale inglese del 1834", cat:"concetto"},
+ {q:"Il vero e proprio tracollo italiano derivò dalla peste del 1629–30, che uccise circa 1.350.000 persone nel:", a:"Centro-nord della penisola", cat:"luogo"},
+ {q:"La fine del periodo fertile femminile, secondo Klapisch-Zuber, si collocava tra i:", a:"35–40 anni", cat:"numero"},
+ {q:"La rivoluzione industriale e l'avanzamento della tecnologia hanno dato origine al fenomeno del:", a:"Capitalismo", cat:"concetto"},
+ {q:"La prima vera prova sperimentale del moto della Terra si ebbe solo nel 1791–92 da parte di:", a:"Guglielmini", cat:"persona"},
+ {q:"Nel 1832, sotto il ministero whig di Lord Grey, l'agitazione operaia riesce a imporre il:", a:"Reform Act", cat:"concetto"},
+ {q:"Huygens dimostrò che l'isocronismo si realizza:", a:"Sul cicloide", cat:"concetto"},
+ {q:"Dalla fine del Quattrocento la presenza femminile nelle corporazioni risulta sempre più dipendente da:", a:"I loro legami familiari", cat:"concetto"},
+ {q:"Come veniva definita la donna in età da marito (postpuberale) ma non ancora sposata?", a:"Da maritare", cat:"concetto"},
+ {q:"Il libro alla cui stesura partecipò Galileo, condannato perché ritenuto pericoloso:", a:"Il Dialogo", cat:"opera"},
+ {q:"Quante copie furono vendute delle trenta pubblicazioni di Lutero?", a:"300.000 copie", cat:"numero"},
+ {q:"Dov'è nato Martin Lutero?", a:"In Sassonia", cat:"luogo"},
+ {q:"La popolazione urbana della Gran Bretagna nel XIX secolo passò in cento anni dal 30% al:", a:"75%", cat:"numero"},
+ {q:"Le quattro premesse essenziali della Rivoluzione Industriale presenti solo in Inghilterra (incremento demografico, rivoluzione agricola, sviluppo dei commerci, crescita culturale-tecnologica) seguono la lezione dello storico:", a:"Paolo Viola", cat:"persona"},
+ {q:"Alla fine del XVIII secolo lo strumento fondamentale per l'attività mineraria in Inghilterra era:", a:"La pompa di Newcomen", cat:"concetto"},
+ {q:"I filatori si riunirono in un movimento di sciopero grazie anche all'opera di:", a:"John Doherty", cat:"persona"},
+ {q:"La popolazione comincia a concentrarsi nelle città, dando luogo al fenomeno:", a:"Dell'urbanesimo", cat:"concetto"},
+ {q:"Il programma dell'agitazione radicale inglese negli anni di crisi 1816–1819 era costituito da:", a:"Suffragio universale e riforma parlamentare", cat:"concetto"},
+ {q:"Con l'avvento della Rivoluzione Industriale nuovi centri urbani nacquero dal nulla, come:", a:"Liverpool e Manchester", cat:"luogo"},
+ {q:"A sostenere che l'Inghilterra fosse la regione con la maggiore quantità di terreno agricolo disponibile per lavoratore, con al tempo stesso una forte urbanizzazione, è stato lo storico:", a:"Dovring", cat:"persona"},
+ {q:"La pressione per far sposare le figlie il più giovani possibile portava talvolta nel letto nuziale ragazze non ancora mestruate, come accadde alla novenne:", a:"Caterina Sforza", cat:"persona"},
+ {q:"Il primo fulcro delle trasformazioni industriali inglesi avvenne nel settore:", a:"Tessile", cat:"concetto"},
+ {q:"L'identità maschile in età moderna veniva associata all'investimento sulla:", a:"Discendenza", cat:"concetto"},
+ {q:"La finitrice meccanica era stata inventata intorno al 1830 nel:", a:"New England", cat:"luogo"},
+ {q:"Figure prima irregolari sono ora inserite a pieno titolo e apprezzate dalla società del Settecento, come la pittrice:", a:"Rosalba Carriera", cat:"persona"},
+ {q:"La commissione vaticana sul caso Galilei era presieduta da:", a:"Paul Poupard", cat:"persona"},
+ {q:"L'uso prevalente di una lingua comune, il latino, consentì la stampa di libri che potevano essere acquistati e letti:", a:"In tutta Europa", cat:"luogo"},
+ {q:"Nel 1829 John Doherty riunisce nel Regno Unito in un'Unione Generale:", a:"I filatori", cat:"concetto"},
+ {q:"Il canale del Duca di Bridgewater che collega Worsley a Manchester fu progettato da:", a:"James Brindley", cat:"persona"},
+ {q:"\u201cThe Voice of the People\u201d era il settimanale tradeunionista di:", a:"John Doherty", cat:"persona"},
+ {q:"Dal 1824 al 1829 Owen tentò un esperimento di villaggio cooperativo a New Harmony, in:", a:"Indiana", cat:"luogo"},
+ {q:"Dove fu fatta la prova di una cooperativa di consumo?", a:"A Rochdale", cat:"luogo"},
+ {q:"Una delle spiegazioni della sfavorevole congiuntura agraria secentesca è legata:", a:"Al mutamento climatico (piccola glaciazione)", cat:"concetto"},
+ {q:"L'avvocato irlandese che, insieme ad altri, voleva diventare regista del movimento cartista:", a:"O'Connor", cat:"persona"},
+ {q:"Tra i movimenti di agitazione rivoluzionaria più noti della prima metà dell'Ottocento si annovera:", a:"Il cartismo", cat:"concetto"},
+ {q:"I sobborghi fatiscenti in cui erano costretti a vivere in condizioni disumane gli operai delle fabbriche inglesi erano denominati:", a:"Slums", cat:"concetto"},
+ {q:"Nel 1819 un reggimento di cavalleria (ussari) caricò un meeting di 50.000 persone a:", a:"Saint Peter Fields", cat:"luogo"},
+ {q:"L'anno in cui il Factory Act portò agli operai la prima legge sulla protezione dei lavoratori (stesso anno dell'abolizione della schiavitù nelle Indie occidentali):", a:"1833", cat:"anno"},
+ {q:"I cambiamenti intervenuti tra il 1760 e il 1830 nella struttura sociale ed economica britannica vengono tradizionalmente riassunti con l'espressione:", a:"Prima Rivoluzione Industriale", cat:"concetto"},
+ {q:"L'Inghilterra era ricca di stratigrafie del:", a:"Carbonifero", cat:"concetto"},
+ {q:"I testi spagnoli del Seicento contenenti consigli e propositi di politica economica presero il nome di:", a:"Arbitros", cat:"concetto"},
+ {q:"Coloro che estendevano il concetto di riforma dal campo morale a quello della fede e del dogma erano detti:", a:"Agitatori religiosi", cat:"concetto"},
+ {q:"Lo scrittore vittoriano che a 12 anni lavorava in fabbrica e scrisse del lavoro minorile:", a:"Charles Dickens", cat:"persona"},
+ {q:"Alberto, principe di Sassonia-Coburgo, sposato dalla regina Vittoria nel 1840, era, dal punto di vista della parentela:", a:"Suo cugino", cat:"concetto"},
+ {q:"Alberto, principe di Sassonia-Coburgo, era politicamente:", a:"Conservatore", cat:"concetto"},
+ {q:"Nei primi anni del lungo regno della regina Vittoria il suo mentore fu:", a:"Lord Melbourne", cat:"persona"},
+ {q:"A metà del XVIII secolo scrisse uno dei primi saggi di scienza sociale sulle attese di vita:", a:"Antoine Deparcieux", cat:"persona"},
+ {q:"Le celebrazioni carnevalesche usuali in Francia fino al Settecento erano note come:", a:"Feste dei folli", cat:"concetto"},
+ {q:"In Italia la prima tipografia fu aperta nel 1465 a:", a:"Subiaco", cat:"luogo"},
+ {q:"In Catalogna e Portogallo scoppiarono due rivoluzioni parallele per l'emancipazione dal dominio castigliano nel:", a:"1640", cat:"anno"},
+ {q:"Nel 1469 l'arte della stampa approdò a Venezia; qui si trasferì l'editore e umanista:", a:"Aldo Manuzio", cat:"persona"},
+ {q:"L'idea di un cannocchiale giunge a Galileo da un'invenzione:", a:"Olandese", cat:"concetto"},
+ {q:"A teorizzare il riassorbimento della disoccupazione industriale col ritorno ai campi, dove cooperative operaie acquisterebbero grandi estensioni di terreno per la lottizzazione in piccole proprietà, fu:", a:"O'Connor", cat:"persona"},
+ {q:"Dopo il 1820 in Inghilterra la distruzione delle prime trebbiatrici da parte dei braccianti agricoli ebbe come protagonista-simbolo:", a:"Captain Swing", cat:"persona"},
+ {q:"A negare che la crisi del Seicento fosse legata ai processi di produzione e alla necessità di abbattere il sistema feudale per quello capitalistico fu:", a:"Trevor-Roper", cat:"persona"},
+ {q:"L'epidemia del 1630 fu veicolata da:", a:"Le truppe impegnate nella Guerra dei Trent'anni", cat:"concetto"},
+ {q:"Nel 1781 il brevetto della macchina a vapore si realizzò grazie all'ingegnosità di:", a:"James Watt", cat:"persona"},
+ {q:"La regina Vittoria salì al trono nel 1837 a:", a:"Diciotto anni", cat:"numero"},
+ {q:"Dove è stata costruita nel 1863 la prima metropolitana al mondo?", a:"Londra", cat:"luogo"},
+ {q:"Recentemente a insistere sul carattere globale della crisi del Seicento è stato:", a:"Geoffrey Parker", cat:"persona"},
+ {q:"L'emancipazione dell'uomo dal pater familias avveniva soprattutto tramite:", a:"Il matrimonio", cat:"concetto"},
+ {q:"Il mondo della borghesia urbana non costruì un'identità antagonista a quella della nobiltà: la sua massima aspirazione era integrarsi per mezzo di:", a:"Alleanze matrimoniali", cat:"concetto"},
+ {q:"Chi ha ben documentato come i più feroci persecutori delle streghe fossero i dotti?", a:"Hugh Trevor-Roper", cat:"persona"},
+ {q:"La regina Vittoria sostenne fermamente la politica liberista di:", a:"Robert Peel", cat:"persona"},
+ {q:"L'uomo originario di una famiglia di artigiani gallesi che con la sua fabbrica a New Lanark entrò nella classe dei nuovi imprenditori e impersonò un'ideologia nuova:", a:"Robert Owen", cat:"persona"},
+ {q:"Il \u201cMysterium Cosmographicum\u201d è un'opera di:", a:"Keplero", cat:"persona"},
+ {q:"I fenomeni di urbanizzazione dell'età moderna erano più simili a quelli:", a:"Dell'età medievale", cat:"concetto"},
+ {q:"I manufatti di cotone realizzati in India e importati dalla Compagnia inglese delle Indie cominciarono a conquistare i mercati europei, americani e africani nella prima metà del:", a:"Settecento", cat:"anno"},
+ {q:"Autore del trattato sulla luce (pubblicato nel 1690):", a:"Huygens", cat:"persona"},
+ {q:"L'inglese John Wyclif (1330–1384) e il boemo Jan Hus (1369–1415) furono due:", a:"Agitatori religiosi", cat:"concetto"},
+ {q:"Dalla \u201cCarta del popolo\u201d (The People's Charter) elaborata nel 1836 nacque il movimento:", a:"Cartista", cat:"concetto"},
+ {q:"L'origine nazionale di Robert Owen era:", a:"Gallese", cat:"concetto"}
+];
+
+/* ===== Pool extra di distrattori per categorie poco popolate ===== */
+const EXTRA = {
+ anno:["1618–1648","1833","1640","1836","1834","1832","1848","Settecento","Ottocento","1690"],
+ numero:["35–40 anni","300.000 copie","75%","Diciotto anni","100.000 copie","60%","Ventun anni","25–30 anni"],
+ opera:["Il Dialogo","Il Saggiatore","Mysterium Cosmographicum","De revolutionibus orbium coelestium","Trattato sulla luce","Sidereus Nuncius"]
+};
+
+/* =========================================================
+   Motore
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const shuffle = arr => {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+function buildFPQuestion(item){
+  let pool = FP.filter(x => x.cat === item.cat && x.a !== item.a).map(x => x.a);
+  if (EXTRA[item.cat]) pool = pool.concat(EXTRA[item.cat].filter(x => x !== item.a));
+  if (pool.length < 3) pool = pool.concat(FP.filter(x => x.a !== item.a).map(x => x.a));
+  const distractors = shuffle([...new Set(pool)]).slice(0, 3);
+  const options = shuffle([item.a, ...distractors]);
+  return { source:"Fuori piattaforma", q:item.q, o:options, c:options.indexOf(item.a) };
+}
+
+function buildMCQQuestion(item){
+  const pairs = item.o.map((txt, i) => ({ txt, ok: i === item.c }));
+  const mixed = shuffle(pairs);
+  return { source:"Quiz per temi · " + item.t, q:item.q, o:mixed.map(p => p.txt), c:mixed.findIndex(p => p.ok) };
+}
+
+const state = { questions:[], idx:0, correct:0, wrong:[], mode:"", instantFeedback:true, answered:false };
+
+function startQuiz(mode){
+  let qs = [];
+  if (mode === "esame") {
+    const pool = shuffle([
+      ...MCQ.map(buildMCQQuestion),
+      ...FP.map(buildFPQuestion)
+    ]);
+    qs = pool.slice(0, 30);
+    state.instantFeedback = false;
+    $("res-label").textContent = "Esito della simulazione d'esame";
+  } else if (mode === "mcq") {
+    qs = shuffle(MCQ.map(buildMCQQuestion));
+    state.instantFeedback = true;
+    $("res-label").textContent = "Allenamento · Quiz per temi";
+  } else if (mode === "fp") {
+    qs = shuffle(FP.map(buildFPQuestion));
+    state.instantFeedback = true;
+    $("res-label").textContent = "Allenamento · Fuori piattaforma";
+  } else {
+    qs = shuffle([...MCQ.map(buildMCQQuestion), ...FP.map(buildFPQuestion)]);
+    state.instantFeedback = true;
+    $("res-label").textContent = "Maratona · Tutte le domande";
+  }
+  state.questions = qs;
+  state.idx = 0;
+  state.correct = 0;
+  state.wrong = [];
+  state.mode = mode;
+  showView("quiz");
+  renderQuestion();
+}
+
+function showView(name){
+  $("view-home").classList.toggle("hidden", name !== "home");
+  $("view-quiz").classList.toggle("hidden", name !== "quiz");
+  $("view-results").classList.toggle("hidden", name !== "results");
+  window.scrollTo(0, 0);
+}
+
+function renderQuestion(){
+  const q = state.questions[state.idx];
+  state.answered = false;
+  $("quiz-counter").textContent = "Domanda " + (state.idx + 1) + " / " + state.questions.length;
+  $("quiz-score").textContent = state.instantFeedback ? ("Corrette: " + state.correct) : "Simulazione — voto alla fine";
+  $("quiz-bar").style.width = ((state.idx) / state.questions.length * 100) + "%";
+  $("q-source").textContent = q.source;
+  $("q-text").textContent = q.q;
+  const fb = $("q-feedback");
+  fb.textContent = "";
+  fb.className = "feedback";
+  $("btn-next").classList.add("hidden");
+
+  const box = $("q-options");
+  box.innerHTML = "";
+  const letters = ["A", "B", "C", "D"];
+  q.o.forEach((txt, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.dataset.index = i;
+    const l = document.createElement("span");
+    l.className = "letter";
+    l.textContent = letters[i];
+    const s = document.createElement("span");
+    s.textContent = txt;
+    b.appendChild(l);
+    b.appendChild(s);
+    b.addEventListener("click", onAnswer);
+    box.appendChild(b);
+  });
+}
+
+function onAnswer(e){
+  if (state.answered) return;
+  state.answered = true;
+  const chosen = parseInt(e.currentTarget.dataset.index, 10);
+  const q = state.questions[state.idx];
+  const buttons = Array.from($("q-options").children);
+  buttons.forEach(b => { b.disabled = true; });
+  const isCorrect = chosen === q.c;
+  if (isCorrect) state.correct++;
+  else state.wrong.push({ q:q.q, given:q.o[chosen], right:q.o[q.c], source:q.source });
+
+  if (state.instantFeedback) {
+    buttons[q.c].classList.add("correct");
+    if (!isCorrect) buttons[chosen].classList.add("wrong");
+    const fb = $("q-feedback");
+    fb.textContent = isCorrect ? "Corretto!" : ("Sbagliato — la risposta giusta è: " + q.o[q.c]);
+    fb.classList.add(isCorrect ? "ok" : "err");
+  } else {
+    buttons[chosen].style.borderColor = "var(--accent)";
+    buttons[chosen].style.background = "var(--accent-soft)";
+  }
+  const next = $("btn-next");
+  next.textContent = state.idx === state.questions.length - 1 ? "Vedi risultato →" : "Avanti →";
+  next.classList.remove("hidden");
+}
+
+function nextQuestion(){
+  if (state.idx < state.questions.length - 1) {
+    state.idx++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+}
+
+function showResults(){
+  const tot = state.questions.length;
+  const voto = Math.round(state.correct / tot * 30);
+  const v = $("res-voto");
+  v.className = "voto";
+  if (voto >= 30) { v.classList.add("lode"); v.textContent = "30/30"; }
+  else { v.textContent = voto + "/30"; v.classList.add(voto >= 18 ? "pass" : "fail"); }
+  const esito = voto >= 30 ? "Eccellente!" : voto >= 27 ? "Ottimo risultato" : voto >= 18 ? "Promosso" : "Non sufficiente — riprova";
+  $("res-detail").textContent = state.correct + " risposte corrette su " + tot + " · " + esito;
+
+  const rev = $("res-review");
+  rev.innerHTML = "";
+  if (state.wrong.length) {
+    const h = document.createElement("h3");
+    h.textContent = "Da ripassare (" + state.wrong.length + ")";
+    rev.appendChild(h);
+    state.wrong.forEach(w => {
+      const d = document.createElement("div");
+      d.className = "rev-item";
+      const p1 = document.createElement("div"); p1.className = "q"; p1.textContent = w.q;
+      const p2 = document.createElement("div"); p2.className = "a-wrong"; p2.textContent = "La tua risposta: " + w.given;
+      const p3 = document.createElement("div"); p3.className = "a-right"; p3.textContent = "Risposta corretta: " + w.right;
+      d.appendChild(p1); d.appendChild(p2); d.appendChild(p3);
+      rev.appendChild(d);
+    });
+  } else {
+    const h = document.createElement("h3");
+    h.textContent = "Nessun errore — tutto corretto!";
+    rev.appendChild(h);
+  }
+  showView("results");
+}
+
+/* ===== init ===== */
+document.addEventListener("DOMContentLoaded", () => {
+  $("stat-mcq").textContent = MCQ.length;
+  $("stat-fp").textContent = FP.length;
+  $("stat-tot").textContent = MCQ.length + FP.length;
+  $("mode-esame").addEventListener("click", () => startQuiz("esame"));
+  $("mode-mcq").addEventListener("click", () => startQuiz("mcq"));
+  $("mode-fp").addEventListener("click", () => startQuiz("fp"));
+  $("mode-all").addEventListener("click", () => startQuiz("all"));
+  $("btn-next").addEventListener("click", nextQuestion);
+  $("btn-exit").addEventListener("click", () => showView("home"));
+  $("btn-retry").addEventListener("click", () => startQuiz(state.mode));
+  $("btn-home").addEventListener("click", () => showView("home"));
+});
+</script>
+</body>
+</html>
